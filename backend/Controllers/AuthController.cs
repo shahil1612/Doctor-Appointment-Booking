@@ -18,11 +18,6 @@ namespace backend.Controllers
         /// </summary>
         private readonly IAuthService _authService;
 
-        /// <summary>
-        /// Represents the logger instance.
-        /// </summary>
-        private readonly ILogger<AuthController> _logger;
-
         #endregion
 
         #region Constructor
@@ -31,11 +26,9 @@ namespace backend.Controllers
         /// Initializes a new instance of the <see cref="AuthController"/> class.
         /// </summary>
         /// <param name="authService">The authentication service.</param>
-        /// <param name="logger">The logger instance.</param>
-        public AuthController(IAuthService authService, ILogger<AuthController> logger)
+        public AuthController(IAuthService authService)
         {
             _authService = authService;
-            _logger = logger;
         }
 
         #endregion
@@ -50,38 +43,9 @@ namespace backend.Controllers
         [HttpPost("signup")]
         public async Task<IActionResult> Signup([FromBody] SignupRequest request)
         {
-            (Models.TBL01? _, ErrorResponse? preSaveError) = await _authService.PreSaveAsync(request);
-            if (preSaveError != null)
-            {
-                return preSaveError.Message switch
-                {
-                    "Server error." => StatusCode(500, preSaveError),
-                    _ => BadRequest(preSaveError)
-                };
-            }
-
-            ErrorResponse? validateError = await _authService.ValidateAsync();
-            if (validateError != null)
-            {
-                return validateError.Message switch
-                {
-                    "Email already registered." => Conflict(validateError),
-                    "Server error." => StatusCode(500, validateError),
-                    _ => BadRequest(validateError)
-                };
-            }
-
-            ErrorResponse? error = await _authService.SaveAsync();
-
-            if (error != null)
-            {
-                return error.Message switch
-                {
-                    "Email already registered." => Conflict(error),
-                    "Server error." => StatusCode(500, error),
-                    _ => BadRequest(error)
-                };
-            }
+            await _authService.PreSaveAsync(request);
+            await _authService.ValidateAsync();
+            await _authService.SaveAsync();
 
             return StatusCode(201, new { message = "User registered successfully." });
         }
@@ -94,18 +58,7 @@ namespace backend.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            (LoginResponse? response, ErrorResponse? error) = await _authService.LoginAsync(request);
-
-            if (error != null)
-            {
-                return error.Message switch
-                {
-                    "Invalid credentials." => Unauthorized(error),
-                    string message when message.Contains("registered as") => Unauthorized(error),
-                    "Server error." => StatusCode(500, error),
-                    _ => BadRequest(error)
-                };
-            }
+            LoginResponse response = await _authService.LoginAsync(request);
 
             return Ok(response);
         }

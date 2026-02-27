@@ -115,4 +115,7 @@ C:\Users\sahil\OneDrive\Desktop\Doctor Appointment Booking\backend\obj\Debug\net
 C:\Users\sahil\OneDrive\Desktop\Doctor Appointment Booking\backend\obj\Debug\net8.0\backend.genruntimeconfig.cache
 C:\Users\sahil\OneDrive\Desktop\Doctor Appointment Booking\backend\obj\Debug\net8.0\ref\backend.dll
 C:\Users\sahil\OneDrive\Desktop\Doctor Appointment Booking\backend\bin\Debug\net8.0\backend.exe
-C:\Users\sahil\OneDrive\Desktop\Doctor Appointment Booking\backend\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+C:\Users\sahil\OneDrive\Desktop\Doctor Appointment Booking\backend\bin\Debug\net8.0\nlog.config
+C:\Users\sahil\OneDrive\Desktop\Doctor Appointment Booking\backend\bin\Debug\net8.0\NLog.dll
+C:\Users\sahil\OneDrive\Desktop\Doctor Appointment Booking\backend\bin\Debug\net8.0\NLog.Extensions.Logging.dll
+C:\Users\sahil\OneDrive\Desktop\Doctor Appointment Booking\backend\bin\Debug\net8.0\NLog.Web.AspNetCore.dll

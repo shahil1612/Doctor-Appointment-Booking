@@ -7,18 +7,23 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using backend.Data;
 using backend.DTOs;
+using backend.Middleware;
 using backend.Mapping;
 using backend.Repositories;
 using backend.Services;
+using NLog.Web;
 
 #region Builder Setup
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.SetMinimumLevel(LogLevel.Trace);
+builder.Host.UseNLog();
+
 #endregion
 
 #region Service Configuration
-
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -109,9 +114,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors();
 app.UseAuthentication();
+app.UseMiddleware<UserContextMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

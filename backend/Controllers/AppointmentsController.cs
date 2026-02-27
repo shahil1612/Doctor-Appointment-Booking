@@ -1,7 +1,8 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using backend.DTOs;
+using backend.Extensions;
+using backend.Exceptions;
 using backend.Models;
 using backend.Services;
 
@@ -46,22 +47,14 @@ namespace backend.Controllers
         [HttpGet("doctors/available")]
         public async Task<IActionResult> GetAvailableDoctors()
         {
-            (int userId, UserType role, ErrorResponse? authError) = GetCurrentUserContext();
-            if (authError != null)
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            if (currentUser.Role != UserType.PATIENT)
             {
-                return Unauthorized(authError);
+                throw new AppException("You are not authorized to access this resource.", StatusCodes.Status403Forbidden);
             }
 
-            if (role != UserType.PATIENT)
-            {
-                return Forbid();
-            }
-
-            (List<AvailableDoctorResponse>? response, ErrorResponse? error) = await _appointmentService.GetAvailableDoctorsAsync(userId);
-            if (error != null)
-            {
-                return BadRequest(error);
-            }
+            List<AvailableDoctorResponse> response = await _appointmentService.GetAvailableDoctorsAsync(currentUser.UserId);
 
             return Ok(response);
         }
@@ -74,47 +67,16 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAppointment([FromBody] CreateAppointmentRequest request)
         {
-            (int userId, UserType role, ErrorResponse? authError) = GetCurrentUserContext();
-            if (authError != null)
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            if (currentUser.Role != UserType.PATIENT)
             {
-                return Unauthorized(authError);
+                throw new AppException("You are not authorized to access this resource.", StatusCodes.Status403Forbidden);
             }
 
-            if (role != UserType.PATIENT)
-            {
-                return Forbid();
-            }
-
-            (Models.TBL04? _, ErrorResponse? preSaveError) = await _appointmentService.CreateAppointmentPresaveAsync(userId, request);
-            if (preSaveError != null)
-            {
-                return preSaveError.Message switch
-                {
-                    "Server error." => StatusCode(500, preSaveError),
-                    _ => BadRequest(preSaveError)
-                };
-            }
-
-            ErrorResponse? validateError = await _appointmentService.CreateAppointmentValidateAsync();
-            if (validateError != null)
-            {
-                return validateError.Message switch
-                {
-                    "Doctor not found." => NotFound(validateError),
-                    "Server error." => StatusCode(500, validateError),
-                    _ => BadRequest(validateError)
-                };
-            }
-
-            (AppointmentResponse? response, ErrorResponse? saveError) = await _appointmentService.CreateAppointmentSaveAsync();
-            if (saveError != null)
-            {
-                return saveError.Message switch
-                {
-                    "Server error." => StatusCode(500, saveError),
-                    _ => BadRequest(saveError)
-                };
-            }
+            await _appointmentService.CreateAppointmentPresaveAsync(currentUser.UserId, request);
+            await _appointmentService.CreateAppointmentValidateAsync();
+            AppointmentResponse response = await _appointmentService.CreateAppointmentSaveAsync();
 
             return StatusCode(201, response);
         }
@@ -130,22 +92,14 @@ namespace backend.Controllers
         [HttpGet("doctor/pending")]
         public async Task<IActionResult> GetPendingAppointments()
         {
-            (int userId, UserType role, ErrorResponse? authError) = GetCurrentUserContext();
-            if (authError != null)
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            if (currentUser.Role != UserType.DOCTOR)
             {
-                return Unauthorized(authError);
+                throw new AppException("You are not authorized to access this resource.", StatusCodes.Status403Forbidden);
             }
 
-            if (role != UserType.DOCTOR)
-            {
-                return Forbid();
-            }
-
-            (List<AppointmentResponse>? response, ErrorResponse? error) = await _appointmentService.GetPendingAppointmentsAsync(userId);
-            if (error != null)
-            {
-                return BadRequest(error);
-            }
+            List<AppointmentResponse> response = await _appointmentService.GetPendingAppointmentsAsync(currentUser.UserId);
 
             return Ok(response);
         }
@@ -159,48 +113,16 @@ namespace backend.Controllers
         [HttpPut("{appointmentId:int}/decision")]
         public async Task<IActionResult> DecideAppointment(int appointmentId, [FromBody] AppointmentDecisionRequest request)
         {
-            (int userId, UserType role, ErrorResponse? authError) = GetCurrentUserContext();
-            if (authError != null)
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            if (currentUser.Role != UserType.DOCTOR)
             {
-                return Unauthorized(authError);
+                throw new AppException("You are not authorized to access this resource.", StatusCodes.Status403Forbidden);
             }
 
-            if (role != UserType.DOCTOR)
-            {
-                return Forbid();
-            }
-
-            ErrorResponse? preSaveError = await _appointmentService.DecideAppointmentPresaveAsync(userId, appointmentId, request);
-            if (preSaveError != null)
-            {
-                return preSaveError.Message switch
-                {
-                    "Server error." => StatusCode(500, preSaveError),
-                    _ => BadRequest(preSaveError)
-                };
-            }
-
-            ErrorResponse? validateError = await _appointmentService.DecideAppointmentValidateAsync();
-            if (validateError != null)
-            {
-                return validateError.Message switch
-                {
-                    "Appointment not found." => NotFound(validateError),
-                    "You are not authorized to modify this appointment." => Forbid(),
-                    "Server error." => StatusCode(500, validateError),
-                    _ => BadRequest(validateError)
-                };
-            }
-
-            ErrorResponse? saveError = await _appointmentService.DecideAppointmentSaveAsync();
-            if (saveError != null)
-            {
-                return saveError.Message switch
-                {
-                    "Server error." => StatusCode(500, saveError),
-                    _ => BadRequest(saveError)
-                };
-            }
+            await _appointmentService.DecideAppointmentPresaveAsync(currentUser.UserId, appointmentId, request);
+            await _appointmentService.DecideAppointmentValidateAsync();
+            await _appointmentService.DecideAppointmentSaveAsync();
 
             return Ok(new { message = "Appointment updated successfully." });
         }
@@ -214,79 +136,21 @@ namespace backend.Controllers
         [HttpPut("{appointmentId:int}/cancel")]
         public async Task<IActionResult> CancelFutureAppointment(int appointmentId, [FromBody] CancelAppointmentRequest request)
         {
-            (int userId, UserType role, ErrorResponse? authError) = GetCurrentUserContext();
-            if (authError != null)
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            if (currentUser.Role != UserType.DOCTOR)
             {
-                return Unauthorized(authError);
+                throw new AppException("You are not authorized to access this resource.", StatusCodes.Status403Forbidden);
             }
 
-            if (role != UserType.DOCTOR)
-            {
-                return Forbid();
-            }
-
-            ErrorResponse? preSaveError = await _appointmentService.CancelFutureAppointmentPresaveAsync(userId, appointmentId, request);
-            if (preSaveError != null)
-            {
-                return preSaveError.Message switch
-                {
-                    "Server error." => StatusCode(500, preSaveError),
-                    _ => BadRequest(preSaveError)
-                };
-            }
-
-            ErrorResponse? validateError = await _appointmentService.CancelFutureAppointmentValidateAsync();
-            if (validateError != null)
-            {
-                return validateError.Message switch
-                {
-                    "Appointment not found." => NotFound(validateError),
-                    "You are not authorized to modify this appointment." => Forbid(),
-                    "Server error." => StatusCode(500, validateError),
-                    _ => BadRequest(validateError)
-                };
-            }
-
-            ErrorResponse? saveError = await _appointmentService.CancelFutureAppointmentSaveAsync();
-            if (saveError != null)
-            {
-                return saveError.Message switch
-                {
-                    "Server error." => StatusCode(500, saveError),
-                    _ => BadRequest(saveError)
-                };
-            }
+            await _appointmentService.CancelFutureAppointmentPresaveAsync(currentUser.UserId, appointmentId, request);
+            await _appointmentService.CancelFutureAppointmentValidateAsync();
+            await _appointmentService.CancelFutureAppointmentSaveAsync();
 
             return Ok(new { message = "Appointment cancelled successfully." });
         }
 
         #endregion
 
-        #region Private Methods
-
-        /// <summary>
-        /// Extracts authenticated user identifier and role from token claims.
-        /// </summary>
-        /// <returns>A tuple with user id, role, and optional error response.</returns>
-        private (int userId, UserType role, ErrorResponse? error) GetCurrentUserContext()
-        {
-            string? idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            string? roleClaim = User.FindFirstValue(ClaimTypes.Role);
-
-            bool isUserIdValid = int.TryParse(idClaim, out int userId);
-            bool isRoleValid = Enum.TryParse(roleClaim, true, out UserType role);
-
-            if (!isUserIdValid || !isRoleValid)
-            {
-                return (0, UserType.PATIENT, new ErrorResponse
-                {
-                    Message = "Invalid authentication token."
-                });
-            }
-
-            return (userId, role, null);
-        }
-
-        #endregion
     }
 }

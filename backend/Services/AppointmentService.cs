@@ -1,4 +1,5 @@
 using backend.DTOs;
+using backend.Exceptions;
 using backend.Mapping;
 using backend.Models;
 using backend.Repositories;
@@ -57,12 +58,12 @@ namespace backend.Services
         #region Public Methods
 
         /// <inheritdoc/>
-        public async Task<(List<AvailableDoctorResponse>? response, ErrorResponse? error)> GetAvailableDoctorsAsync(int patientUserId)
+        public async Task<List<AvailableDoctorResponse>> GetAvailableDoctorsAsync(int patientUserId)
         {
             TBL01? patient = await _appointmentRepository.FindUserByIdAsync(patientUserId);
             if (patient == null || patient.L01F02 != UserType.PATIENT)
             {
-                return (null, new ErrorResponse { Message = "Patient profile not found." });
+                throw new AppException("Patient profile not found.", StatusCodes.Status400BadRequest);
             }
 
             List<TBL03> doctors = await _appointmentRepository.GetAllDoctorsAsync();
@@ -80,73 +81,62 @@ namespace backend.Services
                 doctorResponses.Add(response);
             }
 
-            return (doctorResponses, null);
+            return doctorResponses;
         }
 
         /// <inheritdoc/>
-        public Task<(TBL04? appointment, ErrorResponse? error)> CreateAppointmentPresaveAsync(int patientUserId, CreateAppointmentRequest request)
+        public Task<TBL04> CreateAppointmentPresaveAsync(int patientUserId, CreateAppointmentRequest request)
         {
-            try
+            TBL04 appointment = _reflectionMapper.Map<CreateAppointmentRequest, TBL04>(request);
+            DateTime normalizedAppointmentUtc = DateTime.SpecifyKind(request.AppointmentAtUtc, DateTimeKind.Utc);
+
+            appointment.L04F02 = patientUserId;
+            appointment.L04F04 = normalizedAppointmentUtc;
+            appointment.L04F06 = AppointmentStatus.PENDING;
+            appointment.L04F08 = DateTime.UtcNow;
+            appointment.L04F09 = DateTime.UtcNow;
+
+            _createAppointmentState = new AppointmentCreateWorkflowState
             {
-                TBL04 appointment = _reflectionMapper.Map<CreateAppointmentRequest, TBL04>(request);
-                DateTime normalizedAppointmentUtc = DateTime.SpecifyKind(request.AppointmentAtUtc, DateTimeKind.Utc);
+                PatientUserId = patientUserId,
+                Request = request,
+                Appointment = appointment
+            };
 
-                appointment.L04F02 = patientUserId;
-                appointment.L04F04 = normalizedAppointmentUtc;
-                appointment.L04F06 = AppointmentStatus.PENDING;
-                appointment.L04F08 = DateTime.UtcNow;
-                appointment.L04F09 = DateTime.UtcNow;
-
-                _createAppointmentState = new AppointmentCreateWorkflowState
-                {
-                    PatientUserId = patientUserId,
-                    Request = request,
-                    Appointment = appointment
-                };
-
-                return Task.FromResult<(TBL04? appointment, ErrorResponse? error)>((appointment, null));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Create appointment pre-save error: {ex.Message}");
-                return Task.FromResult<(TBL04? appointment, ErrorResponse? error)>((null, new ErrorResponse
-                {
-                    Message = "Server error."
-                }));
-            }
+            return Task.FromResult(appointment);
         }
 
         /// <inheritdoc/>
-        public async Task<ErrorResponse?> CreateAppointmentValidateAsync()
+        public async Task CreateAppointmentValidateAsync()
         {
             if (_createAppointmentState == null)
             {
-                return new ErrorResponse { Message = "Invalid appointment workflow state." };
+                throw new AppException("Invalid appointment workflow state.", StatusCodes.Status400BadRequest);
             }
 
             TBL01? patient = await _appointmentRepository.FindUserByIdAsync(_createAppointmentState.PatientUserId);
             if (patient == null || patient.L01F02 != UserType.PATIENT)
             {
-                return new ErrorResponse { Message = "Patient profile not found." };
+                throw new AppException("Patient profile not found.", StatusCodes.Status400BadRequest);
             }
 
             bool doctorExists = await _appointmentRepository.DoesDoctorExistAsync(_createAppointmentState.Request.DoctorUserId);
             if (!doctorExists)
             {
-                return new ErrorResponse { Message = "Doctor not found." };
+                throw new AppException("Doctor not found.", StatusCodes.Status404NotFound);
             }
 
             DateTime normalizedAppointmentUtc = _createAppointmentState.Appointment.L04F04;
             if (normalizedAppointmentUtc <= DateTime.UtcNow)
             {
-                return new ErrorResponse { Message = "Appointment time must be in the future." };
+                throw new AppException("Appointment time must be in the future.", StatusCodes.Status400BadRequest);
             }
 
             bool isDoctorSlotOccupied = await _appointmentRepository
                 .IsDoctorSlotOccupiedAsync(_createAppointmentState.Request.DoctorUserId, normalizedAppointmentUtc);
             if (isDoctorSlotOccupied)
             {
-                return new ErrorResponse { Message = "Selected doctor slot is not available." };
+                throw new AppException("Selected doctor slot is not available.", StatusCodes.Status400BadRequest);
             }
 
             bool hasDuplicateAppointment = await _appointmentRepository
@@ -156,46 +146,36 @@ namespace backend.Services
                     normalizedAppointmentUtc);
             if (hasDuplicateAppointment)
             {
-                return new ErrorResponse { Message = "Duplicate appointment request already exists." };
+                throw new AppException("Duplicate appointment request already exists.", StatusCodes.Status400BadRequest);
             }
-
-            return null;
         }
 
         /// <inheritdoc/>
-        public async Task<(AppointmentResponse? response, ErrorResponse? error)> CreateAppointmentSaveAsync()
+        public async Task<AppointmentResponse> CreateAppointmentSaveAsync()
         {
-            try
+            if (_createAppointmentState == null)
             {
-                if (_createAppointmentState == null)
-                {
-                    return (null, new ErrorResponse { Message = "Invalid appointment workflow state." });
-                }
-
-                _createAppointmentState.Appointment.L04F08 = DateTime.UtcNow;
-                _createAppointmentState.Appointment.L04F09 = DateTime.UtcNow;
-
-                await _appointmentRepository.CreateAppointmentAsync(_createAppointmentState.Appointment);
-
-                AppointmentResponse response = _reflectionMapper.Map<TBL04, AppointmentResponse>(_createAppointmentState.Appointment);
-                _createAppointmentState = null;
-
-                return (response, null);
+                throw new AppException("Invalid appointment workflow state.", StatusCodes.Status400BadRequest);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Create appointment save error: {ex.Message}");
-                return (null, new ErrorResponse { Message = "Server error." });
-            }
+
+            _createAppointmentState.Appointment.L04F08 = DateTime.UtcNow;
+            _createAppointmentState.Appointment.L04F09 = DateTime.UtcNow;
+
+            await _appointmentRepository.CreateAppointmentAsync(_createAppointmentState.Appointment);
+
+            AppointmentResponse response = _reflectionMapper.Map<TBL04, AppointmentResponse>(_createAppointmentState.Appointment);
+            _createAppointmentState = null;
+
+            return response;
         }
 
         /// <inheritdoc/>
-        public async Task<(List<AppointmentResponse>? response, ErrorResponse? error)> GetPendingAppointmentsAsync(int doctorUserId)
+        public async Task<List<AppointmentResponse>> GetPendingAppointmentsAsync(int doctorUserId)
         {
             bool doctorExists = await _appointmentRepository.DoesDoctorExistAsync(doctorUserId);
             if (!doctorExists)
             {
-                return (null, new ErrorResponse { Message = "Doctor profile not found." });
+                throw new AppException("Doctor profile not found.", StatusCodes.Status400BadRequest);
             }
 
             List<TBL04> appointments = await _appointmentRepository
@@ -205,158 +185,114 @@ namespace backend.Services
                 .Select(appointment => _reflectionMapper.Map<TBL04, AppointmentResponse>(appointment))
                 .ToList();
 
-            return (responses, null);
+            return responses;
         }
 
         /// <inheritdoc/>
-        public Task<ErrorResponse?> DecideAppointmentPresaveAsync(int doctorUserId, int appointmentId, AppointmentDecisionRequest request)
+        public Task DecideAppointmentPresaveAsync(int doctorUserId, int appointmentId, AppointmentDecisionRequest request)
         {
-            try
+            _decideAppointmentState = new AppointmentDecisionWorkflowState
             {
-                _decideAppointmentState = new AppointmentDecisionWorkflowState
-                {
-                    DoctorUserId = doctorUserId,
-                    AppointmentId = appointmentId,
-                    Request = request
-                };
+                DoctorUserId = doctorUserId,
+                AppointmentId = appointmentId,
+                Request = request
+            };
 
-                return Task.FromResult<ErrorResponse?>(null);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Decide appointment pre-save error: {ex.Message}");
-                return Task.FromResult<ErrorResponse?>(new ErrorResponse { Message = "Server error." });
-            }
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
-        public async Task<ErrorResponse?> DecideAppointmentValidateAsync()
+        public async Task DecideAppointmentValidateAsync()
         {
             if (_decideAppointmentState == null)
             {
-                return new ErrorResponse { Message = "Invalid appointment workflow state." };
+                throw new AppException("Invalid appointment workflow state.", StatusCodes.Status400BadRequest);
             }
 
-            (TBL04? appointment, ErrorResponse? commonError) = await ValidateDoctorAndGetOwnedAppointmentAsync(
+            TBL04 appointment = await ValidateDoctorAndGetOwnedAppointmentAsync(
                 _decideAppointmentState.DoctorUserId,
                 _decideAppointmentState.AppointmentId);
-            if (commonError != null)
-            {
-                return commonError;
-            }
 
-            if (appointment!.L04F06 != AppointmentStatus.PENDING)
+            if (appointment.L04F06 != AppointmentStatus.PENDING)
             {
-                return new ErrorResponse { Message = "Only pending appointments can be approved or declined." };
+                throw new AppException("Only pending appointments can be approved or declined.", StatusCodes.Status400BadRequest);
             }
 
             _decideAppointmentState.Appointment = appointment;
-            return null;
         }
 
         /// <inheritdoc/>
-        public async Task<ErrorResponse?> DecideAppointmentSaveAsync()
+        public async Task DecideAppointmentSaveAsync()
         {
-            try
+            if (_decideAppointmentState?.Appointment == null)
             {
-                if (_decideAppointmentState?.Appointment == null)
-                {
-                    return new ErrorResponse { Message = "Invalid appointment workflow state." };
-                }
-
-                _decideAppointmentState.Appointment.L04F06 = _decideAppointmentState.Request.Decision == AppointmentDecisionAction.APPROVE
-                    ? AppointmentStatus.APPROVED
-                    : AppointmentStatus.DECLINED;
-                _decideAppointmentState.Appointment.L04F07 = _decideAppointmentState.Request.DoctorNotes;
-                _decideAppointmentState.Appointment.L04F09 = DateTime.UtcNow;
-
-                await _appointmentRepository.UpdateAppointmentAsync(_decideAppointmentState.Appointment);
-                _decideAppointmentState = null;
-                return null;
+                throw new AppException("Invalid appointment workflow state.", StatusCodes.Status400BadRequest);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Decide appointment save error: {ex.Message}");
-                return new ErrorResponse { Message = "Server error." };
-            }
+
+            _decideAppointmentState.Appointment.L04F06 = _decideAppointmentState.Request.Decision == AppointmentDecisionAction.APPROVE
+                ? AppointmentStatus.APPROVED
+                : AppointmentStatus.DECLINED;
+            _decideAppointmentState.Appointment.L04F07 = _decideAppointmentState.Request.DoctorNotes;
+            _decideAppointmentState.Appointment.L04F09 = DateTime.UtcNow;
+
+            await _appointmentRepository.UpdateAppointmentAsync(_decideAppointmentState.Appointment);
+            _decideAppointmentState = null;
         }
 
         /// <inheritdoc/>
-        public Task<ErrorResponse?> CancelFutureAppointmentPresaveAsync(int doctorUserId, int appointmentId, CancelAppointmentRequest request)
+        public Task CancelFutureAppointmentPresaveAsync(int doctorUserId, int appointmentId, CancelAppointmentRequest request)
         {
-            try
+            _cancelAppointmentState = new AppointmentCancelWorkflowState
             {
-                _cancelAppointmentState = new AppointmentCancelWorkflowState
-                {
-                    DoctorUserId = doctorUserId,
-                    AppointmentId = appointmentId,
-                    Request = request
-                };
+                DoctorUserId = doctorUserId,
+                AppointmentId = appointmentId,
+                Request = request
+            };
 
-                return Task.FromResult<ErrorResponse?>(null);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Cancel appointment pre-save error: {ex.Message}");
-                return Task.FromResult<ErrorResponse?>(new ErrorResponse { Message = "Server error." });
-            }
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
-        public async Task<ErrorResponse?> CancelFutureAppointmentValidateAsync()
+        public async Task CancelFutureAppointmentValidateAsync()
         {
             if (_cancelAppointmentState == null)
             {
-                return new ErrorResponse { Message = "Invalid appointment workflow state." };
+                throw new AppException("Invalid appointment workflow state.", StatusCodes.Status400BadRequest);
             }
 
-            (TBL04? appointment, ErrorResponse? commonError) = await ValidateDoctorAndGetOwnedAppointmentAsync(
+            TBL04 appointment = await ValidateDoctorAndGetOwnedAppointmentAsync(
                 _cancelAppointmentState.DoctorUserId,
                 _cancelAppointmentState.AppointmentId);
-            if (commonError != null)
-            {
-                return commonError;
-            }
 
-            if (appointment!.L04F04 <= DateTime.UtcNow)
+            if (appointment.L04F04 <= DateTime.UtcNow)
             {
-                return new ErrorResponse { Message = "Only future appointments can be cancelled." };
+                throw new AppException("Only future appointments can be cancelled.", StatusCodes.Status400BadRequest);
             }
 
             if (appointment.L04F06 != AppointmentStatus.PENDING && appointment.L04F06 != AppointmentStatus.APPROVED)
             {
-                return new ErrorResponse { Message = "Only pending or approved appointments can be cancelled." };
+                throw new AppException("Only pending or approved appointments can be cancelled.", StatusCodes.Status400BadRequest);
             }
 
             _cancelAppointmentState.Appointment = appointment;
-            return null;
         }
 
         /// <inheritdoc/>
-        public async Task<ErrorResponse?> CancelFutureAppointmentSaveAsync()
+        public async Task CancelFutureAppointmentSaveAsync()
         {
-            try
+            if (_cancelAppointmentState?.Appointment == null)
             {
-                if (_cancelAppointmentState?.Appointment == null)
-                {
-                    return new ErrorResponse { Message = "Invalid appointment workflow state." };
-                }
-
-                _reflectionMapper.MapToExisting<CancelAppointmentRequest, TBL04>(
-                    _cancelAppointmentState.Request,
-                    _cancelAppointmentState.Appointment);
-                _cancelAppointmentState.Appointment.L04F06 = AppointmentStatus.CANCELLED;
-                _cancelAppointmentState.Appointment.L04F09 = DateTime.UtcNow;
-
-                await _appointmentRepository.UpdateAppointmentAsync(_cancelAppointmentState.Appointment);
-                _cancelAppointmentState = null;
-                return null;
+                throw new AppException("Invalid appointment workflow state.", StatusCodes.Status400BadRequest);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Cancel appointment save error: {ex.Message}");
-                return new ErrorResponse { Message = "Server error." };
-            }
+
+            _reflectionMapper.MapToExisting<CancelAppointmentRequest, TBL04>(
+                _cancelAppointmentState.Request,
+                _cancelAppointmentState.Appointment);
+            _cancelAppointmentState.Appointment.L04F06 = AppointmentStatus.CANCELLED;
+            _cancelAppointmentState.Appointment.L04F09 = DateTime.UtcNow;
+
+            await _appointmentRepository.UpdateAppointmentAsync(_cancelAppointmentState.Appointment);
+            _cancelAppointmentState = null;
         }
 
         #endregion
@@ -369,26 +305,26 @@ namespace backend.Services
         /// <param name="doctorUserId">The doctor user identifier.</param>
         /// <param name="appointmentId">The appointment identifier.</param>
         /// <returns>A tuple containing appointment entity or validation error.</returns>
-        private async Task<(TBL04? appointment, ErrorResponse? error)> ValidateDoctorAndGetOwnedAppointmentAsync(int doctorUserId, int appointmentId)
+        private async Task<TBL04> ValidateDoctorAndGetOwnedAppointmentAsync(int doctorUserId, int appointmentId)
         {
             bool doctorExists = await _appointmentRepository.DoesDoctorExistAsync(doctorUserId);
             if (!doctorExists)
             {
-                return (null, new ErrorResponse { Message = "Doctor profile not found." });
+                throw new AppException("Doctor profile not found.", StatusCodes.Status400BadRequest);
             }
 
             TBL04? appointment = await _appointmentRepository.FindAppointmentByIdAsync(appointmentId);
             if (appointment == null)
             {
-                return (null, new ErrorResponse { Message = "Appointment not found." });
+                throw new AppException("Appointment not found.", StatusCodes.Status404NotFound);
             }
 
             if (appointment.L04F03 != doctorUserId)
             {
-                return (null, new ErrorResponse { Message = "You are not authorized to modify this appointment." });
+                throw new AppException("You are not authorized to modify this appointment.", StatusCodes.Status403Forbidden);
             }
 
-            return (appointment, null);
+            return appointment;
         }
 
         #endregion

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "/Topg5RtiVw=",
+  "dgSpecHash": "5t9Kiit8d8c=",
   "success": true,
   "projectFilePath": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\backend.csproj",
   "expectedPackageFiles": [
@@ -38,6 +38,9 @@
     "C:\\Users\\sahil\\.nuget\\packages\\microsoft.openapi\\1.6.14\\microsoft.openapi.1.6.14.nupkg.sha512",
     "C:\\Users\\sahil\\.nuget\\packages\\mono.texttemplating\\2.2.1\\mono.texttemplating.2.2.1.nupkg.sha512",
     "C:\\Users\\sahil\\.nuget\\packages\\mysqlconnector\\2.3.5\\mysqlconnector.2.3.5.nupkg.sha512",
+    "C:\\Users\\sahil\\.nuget\\packages\\nlog\\6.1.0\\nlog.6.1.0.nupkg.sha512",
+    "C:\\Users\\sahil\\.nuget\\packages\\nlog.extensions.logging\\6.1.1\\nlog.extensions.logging.6.1.1.nupkg.sha512",
+    "C:\\Users\\sahil\\.nuget\\packages\\nlog.web.aspnetcore\\6.1.1\\nlog.web.aspnetcore.6.1.1.nupkg.sha512",
     "C:\\Users\\sahil\\.nuget\\packages\\pomelo.entityframeworkcore.mysql\\8.0.0\\pomelo.entityframeworkcore.mysql.8.0.0.nupkg.sha512",
     "C:\\Users\\sahil\\.nuget\\packages\\swashbuckle.aspnetcore\\6.6.2\\swashbuckle.aspnetcore.6.6.2.nupkg.sha512",
     "C:\\Users\\sahil\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.6.2\\swashbuckle.aspnetcore.swagger.6.6.2.nupkg.sha512",
