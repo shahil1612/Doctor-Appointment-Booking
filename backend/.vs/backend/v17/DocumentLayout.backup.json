@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{E48E663D-088A-4B58-BE22-84017C41A786}|backend.csproj|c:\\users\\sahil\\onedrive\\desktop\\doctor appointment booking\\backend\\dtos\\signuprequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E48E663D-088A-4B58-BE22-84017C41A786}|backend.csproj|solutionrelative:dtos\\signuprequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{E48E663D-088A-4B58-BE22-84017C41A786}|backend.csproj|c:\\users\\sahil\\onedrive\\desktop\\doctor appointment booking\\backend\\models\\tbl04.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E48E663D-088A-4B58-BE22-84017C41A786}|backend.csproj|solutionrelative:models\\tbl04.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -45,10 +49,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{E48E663D-088A-4B58-BE22-84017C41A786}|backend.csproj|c:\\users\\sahil\\onedrive\\desktop\\doctor appointment booking\\backend\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E48E663D-088A-4B58-BE22-84017C41A786}|backend.csproj|solutionrelative:controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{E48E663D-088A-4B58-BE22-84017C41A786}|backend.csproj|c:\\users\\sahil\\onedrive\\desktop\\doctor appointment booking\\backend\\dtos\\signuprequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{E48E663D-088A-4B58-BE22-84017C41A786}|backend.csproj|solutionrelative:dtos\\signuprequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E48E663D-088A-4B58-BE22-84017C41A786}|backend.csproj|c:\\users\\sahil\\onedrive\\desktop\\doctor appointment booking\\backend\\dtos\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -162,19 +162,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 9,
           "Children": [
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
-            },
-            {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "AuthController.cs",
               "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "Controllers\\AuthController.cs",
@@ -182,11 +174,16 @@
               "RelativeToolTip": "Controllers\\AuthController.cs",
               "ViewState": "AgIAACUAAAAAAAAAAAAAwDAAAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-23T05:40:05.64Z"
+              "WhenOpened": "2026-02-23T05:40:05.64Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "TBL04.cs",
               "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Models\\TBL04.cs",
               "RelativeDocumentMoniker": "Models\\TBL04.cs",
@@ -194,24 +191,11 @@
               "RelativeToolTip": "Models\\TBL04.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAEcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-28T09:50:49.461Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-28T09:50:49.461Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 9,
-              "Title": "IUserRepository.cs",
-              "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Repositories\\IUserRepository.cs",
-              "RelativeDocumentMoniker": "Repositories\\IUserRepository.cs",
-              "ToolTip": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Repositories\\IUserRepository.cs",
-              "RelativeToolTip": "Repositories\\IUserRepository.cs",
-              "ViewState": "AgIAABgAAAAAAAAAAAAowCMAAAAVAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-24T11:02:14.787Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
               "Title": "UserRepository.cs",
               "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Repositories\\UserRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\UserRepository.cs",
@@ -223,7 +207,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "ApplicationDbContext.cs",
               "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Data\\ApplicationDbContext.cs",
               "RelativeDocumentMoniker": "Data\\ApplicationDbContext.cs",
@@ -235,7 +219,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "backend.csproj",
               "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\backend.csproj",
               "RelativeDocumentMoniker": "backend.csproj",
@@ -247,7 +231,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "TBL01.cs",
               "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Models\\TBL01.cs",
               "RelativeDocumentMoniker": "Models\\TBL01.cs",
@@ -259,7 +243,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "TBL02.cs",
               "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Models\\TBL02.cs",
               "RelativeDocumentMoniker": "Models\\TBL02.cs",
@@ -271,7 +255,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "TBL03.cs",
               "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Models\\TBL03.cs",
               "RelativeDocumentMoniker": "Models\\TBL03.cs",
@@ -283,7 +267,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 0,
               "Title": "SignupRequest.cs",
               "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\DTOs\\SignupRequest.cs",
               "RelativeDocumentMoniker": "DTOs\\SignupRequest.cs",
@@ -291,11 +275,24 @@
               "RelativeToolTip": "DTOs\\SignupRequest.cs",
               "ViewState": "AgIAAAUAAAAAAAAAAAAYwEMAAAA1AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-24T10:32:55.017Z"
+              "WhenOpened": "2026-02-24T10:32:55.017Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 10,
+              "Title": "IUserRepository.cs",
+              "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Repositories\\IUserRepository.cs",
+              "RelativeDocumentMoniker": "Repositories\\IUserRepository.cs",
+              "ToolTip": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Repositories\\IUserRepository.cs",
+              "RelativeToolTip": "Repositories\\IUserRepository.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAowCMAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-24T11:02:14.787Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
               "Title": "AuthService.cs",
               "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Services\\AuthService.cs",
               "RelativeDocumentMoniker": "Services\\AuthService.cs",
@@ -307,7 +304,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "ReflectionMapper.cs",
               "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Mapping\\ReflectionMapper.cs",
               "RelativeDocumentMoniker": "Mapping\\ReflectionMapper.cs",
@@ -628,6 +625,10 @@
               "ViewState": "AgIAAAAAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-02-23T06:08:16.121Z"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
             }
           ]
         }
