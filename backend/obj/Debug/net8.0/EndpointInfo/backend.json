@@ -17,6 +17,36 @@
         }
       }
     },
+    "/api/Appointments/slots/available": {
+      "get": {
+        "tags": [
+          "Appointments"
+        ],
+        "parameters": [
+          {
+            "name": "doctorUserId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "clinicId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Appointments": {
       "post": {
         "tags": [
@@ -41,6 +71,88 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Appointments/doctor/slots": {
+      "post": {
+        "tags": [
+          "Appointments"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointmentSlotRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointmentSlotRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointmentSlotRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Appointments"
+        ],
+        "parameters": [
+          {
+            "name": "clinicId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "includeBooked",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Appointments/doctor/slots/{slotId}": {
+      "delete": {
+        "tags": [
+          "Appointments"
+        ],
+        "parameters": [
+          {
+            "name": "slotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -205,6 +317,131 @@
           }
         }
       }
+    },
+    "/api/Doctor/profile": {
+      "get": {
+        "tags": [
+          "Doctor"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Doctor"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDoctorProfileRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDoctorProfileRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDoctorProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Doctor/clinic": {
+      "post": {
+        "tags": [
+          "Doctor"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClinicRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClinicRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClinicRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Doctor/clinics": {
+      "get": {
+        "tags": [
+          "Doctor"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Patient/profile": {
+      "get": {
+        "tags": [
+          "Patient"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Patient"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePatientProfileRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePatientProfileRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePatientProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -249,9 +486,9 @@
       },
       "CreateAppointmentRequest": {
         "required": [
-          "appointmentAtUtc",
           "doctorUserId",
-          "reason"
+          "reason",
+          "slotId"
         ],
         "type": "object",
         "properties": {
@@ -261,14 +498,103 @@
             "type": "integer",
             "format": "int32"
           },
-          "appointmentAtUtc": {
-            "type": "string",
-            "format": "date-time"
+          "slotId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
           },
           "reason": {
             "maxLength": 500,
             "minLength": 5,
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateAppointmentSlotRequest": {
+        "required": [
+          "clinicId",
+          "slotEndUtc",
+          "slotStartUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "clinicId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "slotStartUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "slotEndUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateClinicRequest": {
+        "required": [
+          "addressLine",
+          "city",
+          "consultationFee",
+          "name",
+          "pincode",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 100,
+            "minLength": 3,
+            "type": "string"
+          },
+          "addressLine": {
+            "maxLength": 200,
+            "minLength": 5,
+            "type": "string"
+          },
+          "city": {
+            "maxLength": 50,
+            "minLength": 2,
+            "type": "string"
+          },
+          "state": {
+            "maxLength": 50,
+            "minLength": 2,
+            "type": "string"
+          },
+          "pincode": {
+            "minLength": 1,
+            "pattern": "^[0-9]{6}$",
+            "type": "string"
+          },
+          "consultationFee": {
+            "maximum": 100000,
+            "minimum": 0,
+            "type": "number",
+            "format": "double"
+          },
+          "latitude": {
+            "maximum": 90,
+            "minimum": -90,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "longitude": {
+            "maximum": 180,
+            "minimum": -180,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "phone": {
+            "pattern": "^$|^[0-9]{10}$",
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -362,6 +688,81 @@
         },
         "additionalProperties": false
       },
+      "UpdateDoctorProfileRequest": {
+        "type": "object",
+        "properties": {
+          "specialization": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "licenseNumber": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "yearsExperience": {
+            "maximum": 60,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "bio": {
+            "maxLength": 1000,
+            "type": "string",
+            "nullable": true
+          },
+          "consultationFee": {
+            "maximum": 100000,
+            "minimum": 0,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdatePatientProfileRequest": {
+        "type": "object",
+        "properties": {
+          "emergencyContact": {
+            "maxLength": 20,
+            "type": "string",
+            "nullable": true
+          },
+          "allergies": {
+            "maxLength": 500,
+            "type": "string",
+            "nullable": true
+          },
+          "bloodGroup": {
+            "maxLength": 10,
+            "type": "string",
+            "nullable": true
+          },
+          "heightCm": {
+            "maximum": 300,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "weightKg": {
+            "maximum": 500,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "chronicConditions": {
+            "maxLength": 1000,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "UserType": {
         "enum": [
           "patient",
@@ -369,6 +770,19 @@
         ],
         "type": "string"
       }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "Enter your JWT token in the text input below.\n\nExample: \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
     }
-  }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
 }

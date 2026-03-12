@@ -19,11 +19,11 @@ namespace backend.DTOs
         public int DoctorUserId { get; set; }
 
         /// <summary>
-        /// Gets or sets appointment UTC date and time.
+        /// Gets or sets appointment slot identifier (required for slot-based booking).
         /// </summary>
-        [Required(ErrorMessage = "Appointment date and time is required.")]
-        [MapProperty("L04F04")]
-        public DateTime AppointmentAtUtc { get; set; }
+        [Required(ErrorMessage = "Please select an appointment slot.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Please select a valid appointment slot.")]
+        public int SlotId { get; set; }
 
         /// <summary>
         /// Gets or sets reason for booking.

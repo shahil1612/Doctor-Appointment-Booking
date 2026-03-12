@@ -60,6 +60,27 @@ namespace backend.Controllers
         }
 
         /// <summary>
+        /// Retrieves available appointment slots for a specific doctor.
+        /// </summary>
+        /// <param name="doctorUserId">The doctor user identifier.</param>
+        /// <param name="clinicId">Optional clinic identifier to filter slots.</param>
+        /// <returns>A list of available slots.</returns>
+        [HttpGet("slots/available")]
+        public async Task<IActionResult> GetAvailableSlots([FromQuery] int doctorUserId, [FromQuery] int? clinicId = null)
+        {
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            if (currentUser.Role != UserType.PATIENT)
+            {
+                throw new AppException("You are not authorized to access this resource.", StatusCodes.Status403Forbidden);
+            }
+
+            List<AppointmentSlotResponse> response = await _appointmentService.GetAvailableSlotsForDoctorAsync(doctorUserId, clinicId);
+
+            return Ok(response);
+        }
+
+        /// <summary>
         /// Creates a new appointment request by patient.
         /// </summary>
         /// <param name="request">The booking request payload.</param>
@@ -84,6 +105,69 @@ namespace backend.Controllers
         #endregion
 
         #region Doctor Endpoints
+
+        /// <summary>
+        /// Creates a new appointment slot by doctor.
+        /// </summary>
+        /// <param name="request">The slot creation request payload.</param>
+        /// <returns>The created slot details.</returns>
+        [HttpPost("doctor/slots")]
+        public async Task<IActionResult> CreateSlot([FromBody] CreateAppointmentSlotRequest request)
+        {
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            if (currentUser.Role != UserType.DOCTOR)
+            {
+                throw new AppException("You are not authorized to access this resource.", StatusCodes.Status403Forbidden);
+            }
+
+            await _appointmentService.CreateSlotPresaveAsync(currentUser.UserId, request);
+            await _appointmentService.CreateSlotValidateAsync();
+            AppointmentSlotResponse response = await _appointmentService.CreateSlotSaveAsync();
+
+            return StatusCode(201, response);
+        }
+
+        /// <summary>
+        /// Retrieves doctor's appointment slots.
+        /// </summary>
+        /// <param name="clinicId">Optional clinic identifier to filter slots.</param>
+        /// <param name="includeBooked">Whether to include booked slots in the response.</param>
+        /// <returns>A list of appointment slots.</returns>
+        [HttpGet("doctor/slots")]
+        public async Task<IActionResult> GetDoctorSlots([FromQuery] int? clinicId = null, [FromQuery] bool includeBooked = true)
+        {
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            if (currentUser.Role != UserType.DOCTOR)
+            {
+                throw new AppException("You are not authorized to access this resource.", StatusCodes.Status403Forbidden);
+            }
+
+            List<AppointmentSlotResponse> response = await _appointmentService.GetDoctorSlotsAsync(currentUser.UserId, clinicId, includeBooked);
+
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Deletes an appointment slot by doctor.
+        /// </summary>
+        /// <param name="slotId">The slot identifier.</param>
+        /// <returns>A status response for deletion action.</returns>
+        [HttpDelete("doctor/slots/{slotId:int}")]
+        public async Task<IActionResult> DeleteSlot(int slotId)
+        {
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            if (currentUser.Role != UserType.DOCTOR)
+            {
+                throw new AppException("You are not authorized to access this resource.", StatusCodes.Status403Forbidden);
+            }
+
+            await _appointmentService.DeleteSlotAsync(currentUser.UserId, slotId);
+
+            return Ok(new { message = "Appointment slot deleted successfully." });
+        }
 
         /// <summary>
         /// Retrieves doctor pending appointment requests.

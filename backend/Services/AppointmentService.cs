@@ -38,6 +38,11 @@ namespace backend.Services
         /// </summary>
         private AppointmentCancelWorkflowState? _cancelAppointmentState;
 
+        /// <summary>
+        /// Represents in-memory workflow state for slot creation.
+        /// </summary>
+        private CreateAppointmentSlotWorkflowState? _createSlotState;
+
         #endregion
 
         #region Constructor
@@ -88,10 +93,8 @@ namespace backend.Services
         public Task<TBL04> CreateAppointmentPresaveAsync(int patientUserId, CreateAppointmentRequest request)
         {
             TBL04 appointment = _reflectionMapper.Map<CreateAppointmentRequest, TBL04>(request);
-            DateTime normalizedAppointmentUtc = DateTime.SpecifyKind(request.AppointmentAtUtc, DateTimeKind.Utc);
 
             appointment.L04F02 = patientUserId;
-            appointment.L04F04 = normalizedAppointmentUtc;
             appointment.L04F06 = AppointmentStatus.PENDING;
             appointment.L04F08 = DateTime.UtcNow;
             appointment.L04F09 = DateTime.UtcNow;
@@ -126,28 +129,30 @@ namespace backend.Services
                 throw new AppException("Doctor not found.", StatusCodes.Status404NotFound);
             }
 
-            DateTime normalizedAppointmentUtc = _createAppointmentState.Appointment.L04F04;
-            if (normalizedAppointmentUtc <= DateTime.UtcNow)
+            // Validate slot exists and is available
+            TBL07? slot = await _appointmentRepository.FindSlotByIdAsync(_createAppointmentState.Request.SlotId);
+            if (slot == null)
             {
-                throw new AppException("Appointment time must be in the future.", StatusCodes.Status400BadRequest);
+                throw new AppException("Appointment slot not found.", StatusCodes.Status404NotFound);
             }
 
-            bool isDoctorSlotOccupied = await _appointmentRepository
-                .IsDoctorSlotOccupiedAsync(_createAppointmentState.Request.DoctorUserId, normalizedAppointmentUtc);
-            if (isDoctorSlotOccupied)
+            if (slot.L07F02 != _createAppointmentState.Request.DoctorUserId)
             {
-                throw new AppException("Selected doctor slot is not available.", StatusCodes.Status400BadRequest);
+                throw new AppException("This slot does not belong to the selected doctor.", StatusCodes.Status400BadRequest);
             }
 
-            bool hasDuplicateAppointment = await _appointmentRepository
-                .IsPatientDuplicateAppointmentAsync(
-                    _createAppointmentState.PatientUserId,
-                    _createAppointmentState.Request.DoctorUserId,
-                    normalizedAppointmentUtc);
-            if (hasDuplicateAppointment)
+            if (slot.L07F06)
             {
-                throw new AppException("Duplicate appointment request already exists.", StatusCodes.Status400BadRequest);
+                throw new AppException("This appointment slot is already booked.", StatusCodes.Status400BadRequest);
             }
+
+            if (slot.L07F04 <= DateTime.UtcNow)
+            {
+                throw new AppException("Cannot book a slot in the past.", StatusCodes.Status400BadRequest);
+            }
+
+            // Set appointment time from slot
+            _createAppointmentState.Appointment.L04F04 = slot.L07F04;
         }
 
         /// <inheritdoc/>
@@ -161,7 +166,11 @@ namespace backend.Services
             _createAppointmentState.Appointment.L04F08 = DateTime.UtcNow;
             _createAppointmentState.Appointment.L04F09 = DateTime.UtcNow;
 
-            await _appointmentRepository.CreateAppointmentAsync(_createAppointmentState.Appointment);
+            int appointmentId = await _appointmentRepository.CreateAppointmentAsync(_createAppointmentState.Appointment);
+            _createAppointmentState.Appointment.L04F01 = appointmentId;
+
+            // Mark slot as booked
+            await _appointmentRepository.MarkSlotAsBookedAsync(_createAppointmentState.Request.SlotId, true);
 
             AppointmentResponse response = _reflectionMapper.Map<TBL04, AppointmentResponse>(_createAppointmentState.Appointment);
             _createAppointmentState = null;
@@ -236,6 +245,23 @@ namespace backend.Services
             _decideAppointmentState.Appointment.L04F09 = DateTime.UtcNow;
 
             await _appointmentRepository.UpdateAppointmentAsync(_decideAppointmentState.Appointment);
+
+            // If declined, find and unbook the slot
+            if (_decideAppointmentState.Request.Decision == AppointmentDecisionAction.DECLINE)
+            {
+                List<TBL07> slots = await _appointmentRepository.GetDoctorSlotsAsync(
+                    _decideAppointmentState.DoctorUserId,
+                    includeBooked: true);
+
+                TBL07? bookedSlot = slots.FirstOrDefault(s =>
+                    s.L07F04 == _decideAppointmentState.Appointment.L04F04 && s.L07F06);
+
+                if (bookedSlot != null)
+                {
+                    await _appointmentRepository.MarkSlotAsBookedAsync(bookedSlot.L07F01, false);
+                }
+            }
+
             _decideAppointmentState = null;
         }
 
@@ -292,7 +318,179 @@ namespace backend.Services
             _cancelAppointmentState.Appointment.L04F09 = DateTime.UtcNow;
 
             await _appointmentRepository.UpdateAppointmentAsync(_cancelAppointmentState.Appointment);
+
+            // Find and unbook the slot
+            List<TBL07> slots = await _appointmentRepository.GetDoctorSlotsAsync(
+                _cancelAppointmentState.DoctorUserId,
+                includeBooked: true);
+
+            TBL07? bookedSlot = slots.FirstOrDefault(s =>
+                s.L07F04 == _cancelAppointmentState.Appointment.L04F04 && s.L07F06);
+
+            if (bookedSlot != null)
+            {
+                await _appointmentRepository.MarkSlotAsBookedAsync(bookedSlot.L07F01, false);
+            }
+
             _cancelAppointmentState = null;
+        }
+
+        /// <inheritdoc/>
+        public async Task CreateSlotPresaveAsync(int doctorUserId, CreateAppointmentSlotRequest request)
+        {
+            bool doctorExists = await _appointmentRepository.DoesDoctorExistAsync(doctorUserId);
+            if (!doctorExists)
+            {
+                throw new AppException("Doctor profile not found.", StatusCodes.Status404NotFound);
+            }
+
+            TBL07 slot = _reflectionMapper.Map<CreateAppointmentSlotRequest, TBL07>(request);
+            slot.L07F02 = doctorUserId;
+            slot.L07F06 = false;
+            slot.L07F07 = DateTime.UtcNow;
+
+            _createSlotState = new CreateAppointmentSlotWorkflowState
+            {
+                DoctorUserId = doctorUserId,
+                Request = request,
+                Slot = slot
+            };
+        }
+
+        /// <inheritdoc/>
+        public async Task CreateSlotValidateAsync()
+        {
+            if (_createSlotState == null)
+            {
+                throw new AppException("Invalid slot creation workflow state.", StatusCodes.Status400BadRequest);
+            }
+
+            if (_createSlotState.Request.SlotStartUtc <= DateTime.UtcNow)
+            {
+                throw new AppException("Slot start time must be in the future.", StatusCodes.Status400BadRequest);
+            }
+
+            if (_createSlotState.Request.SlotEndUtc <= _createSlotState.Request.SlotStartUtc)
+            {
+                throw new AppException("Slot end time must be after start time.", StatusCodes.Status400BadRequest);
+            }
+
+            bool clinicExists = await _appointmentRepository.DoesClinicExistAsync(_createSlotState.Request.ClinicId);
+            if (!clinicExists)
+            {
+                throw new AppException("Clinic not found.", StatusCodes.Status404NotFound);
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<AppointmentSlotResponse> CreateSlotSaveAsync()
+        {
+            if (_createSlotState == null)
+            {
+                throw new AppException("Invalid slot creation workflow state.", StatusCodes.Status400BadRequest);
+            }
+
+            int slotId = await _appointmentRepository.CreateAppointmentSlotAsync(_createSlotState.Slot);
+            _createSlotState.Slot.L07F01 = slotId;
+
+            TBL07? createdSlot = await _appointmentRepository.FindSlotByIdAsync(slotId);
+            if (createdSlot == null)
+            {
+                throw new AppException("Failed to retrieve created slot.", StatusCodes.Status500InternalServerError);
+            }
+
+            AppointmentSlotResponse response = _reflectionMapper.Map<TBL07, AppointmentSlotResponse>(createdSlot);
+            if (createdSlot.L07F09 != null)
+            {
+                response.ClinicName = createdSlot.L07F09.L05F02;
+                response.ClinicAddress = createdSlot.L07F09.L05F03;
+                response.ClinicCity = createdSlot.L07F09.L05F04;
+            }
+
+            _createSlotState = null;
+            return response;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<AppointmentSlotResponse>> GetDoctorSlotsAsync(int doctorUserId, int? clinicId = null, bool includeBooked = true)
+        {
+            bool doctorExists = await _appointmentRepository.DoesDoctorExistAsync(doctorUserId);
+            if (!doctorExists)
+            {
+                throw new AppException("Doctor profile not found.", StatusCodes.Status404NotFound);
+            }
+
+            List<TBL07> slots = await _appointmentRepository.GetDoctorSlotsAsync(doctorUserId, clinicId, includeBooked);
+            List<AppointmentSlotResponse> responses = new List<AppointmentSlotResponse>();
+
+            foreach (TBL07 slot in slots)
+            {
+                AppointmentSlotResponse response = _reflectionMapper.Map<TBL07, AppointmentSlotResponse>(slot);
+                if (slot.L07F09 != null)
+                {
+                    response.ClinicName = slot.L07F09.L05F02;
+                    response.ClinicAddress = slot.L07F09.L05F03;
+                    response.ClinicCity = slot.L07F09.L05F04;
+                }
+                responses.Add(response);
+            }
+
+            return responses;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<AppointmentSlotResponse>> GetAvailableSlotsForDoctorAsync(int doctorUserId, int? clinicId = null)
+        {
+            bool doctorExists = await _appointmentRepository.DoesDoctorExistAsync(doctorUserId);
+            if (!doctorExists)
+            {
+                throw new AppException("Doctor profile not found.", StatusCodes.Status404NotFound);
+            }
+
+            List<TBL07> slots = await _appointmentRepository.GetAvailableSlotsByDoctorAsync(doctorUserId, clinicId);
+            List<AppointmentSlotResponse> responses = new List<AppointmentSlotResponse>();
+
+            foreach (TBL07 slot in slots)
+            {
+                AppointmentSlotResponse response = _reflectionMapper.Map<TBL07, AppointmentSlotResponse>(slot);
+                if (slot.L07F09 != null)
+                {
+                    response.ClinicName = slot.L07F09.L05F02;
+                    response.ClinicAddress = slot.L07F09.L05F03;
+                    response.ClinicCity = slot.L07F09.L05F04;
+                }
+                responses.Add(response);
+            }
+
+            return responses;
+        }
+
+        /// <inheritdoc/>
+        public async Task DeleteSlotAsync(int doctorUserId, int slotId)
+        {
+            bool doctorExists = await _appointmentRepository.DoesDoctorExistAsync(doctorUserId);
+            if (!doctorExists)
+            {
+                throw new AppException("Doctor profile not found.", StatusCodes.Status404NotFound);
+            }
+
+            TBL07? slot = await _appointmentRepository.FindSlotByIdAsync(slotId);
+            if (slot == null)
+            {
+                throw new AppException("Appointment slot not found.", StatusCodes.Status404NotFound);
+            }
+
+            if (slot.L07F02 != doctorUserId)
+            {
+                throw new AppException("You are not authorized to delete this slot.", StatusCodes.Status403Forbidden);
+            }
+
+            if (slot.L07F06)
+            {
+                throw new AppException("Cannot delete a booked slot.", StatusCodes.Status400BadRequest);
+            }
+
+            await _appointmentRepository.DeleteSlotAsync(slot);
         }
 
         #endregion

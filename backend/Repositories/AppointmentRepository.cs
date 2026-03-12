@@ -113,6 +113,89 @@ namespace backend.Repositories
             await _context.SaveChangesAsync();
         }
 
+        /// <inheritdoc/>
+        public async Task<int> CreateAppointmentSlotAsync(TBL07 slot)
+        {
+            _context.AppointmentSlots.Add(slot);
+            await _context.SaveChangesAsync();
+            return slot.L07F01;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<TBL07>> GetDoctorSlotsAsync(int doctorUserId, int? clinicId = null, bool includeBooked = true)
+        {
+            IQueryable<TBL07> query = _context.AppointmentSlots
+                .Include(slot => slot.L07F09)
+                .AsNoTracking()
+                .Where(slot => slot.L07F02 == doctorUserId);
+
+            if (clinicId.HasValue)
+            {
+                query = query.Where(slot => slot.L07F03 == clinicId.Value);
+            }
+
+            if (!includeBooked)
+            {
+                query = query.Where(slot => !slot.L07F06);
+            }
+
+            return await query
+                .OrderBy(slot => slot.L07F04)
+                .ToListAsync();
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<TBL07>> GetAvailableSlotsByDoctorAsync(int doctorUserId, int? clinicId = null)
+        {
+            IQueryable<TBL07> query = _context.AppointmentSlots
+                .Include(slot => slot.L07F09)
+                .AsNoTracking()
+                .Where(slot => slot.L07F02 == doctorUserId && !slot.L07F06 && slot.L07F04 > DateTime.UtcNow);
+
+            if (clinicId.HasValue)
+            {
+                query = query.Where(slot => slot.L07F03 == clinicId.Value);
+            }
+
+            return await query
+                .OrderBy(slot => slot.L07F04)
+                .ToListAsync();
+        }
+
+        /// <inheritdoc/>
+        public async Task<TBL07?> FindSlotByIdAsync(int slotId)
+        {
+            return await _context.AppointmentSlots
+                .Include(slot => slot.L07F09)
+                .FirstOrDefaultAsync(slot => slot.L07F01 == slotId);
+        }
+
+        /// <inheritdoc/>
+        public async Task DeleteSlotAsync(TBL07 slot)
+        {
+            _context.AppointmentSlots.Remove(slot);
+            await _context.SaveChangesAsync();
+        }
+
+        /// <inheritdoc/>
+        public async Task MarkSlotAsBookedAsync(int slotId, bool isBooked)
+        {
+            TBL07? slot = await _context.AppointmentSlots.FindAsync(slotId);
+            if (slot != null)
+            {
+                slot.L07F06 = isBooked;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> DoesClinicExistAsync(int clinicId)
+        {
+            return await _context.Clinics
+                .AsNoTracking()
+                .AnyAsync(clinic => clinic.L05F01 == clinicId);
+        }
+
         #endregion
     }
 }

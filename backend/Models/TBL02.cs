@@ -48,6 +48,31 @@ namespace backend.Models
         [ForeignKey("L02F02")]
         public TBL01 L02F06 { get; set; } = null!;
 
+
+        /// <summary>
+        /// Represents patient blood group
+        /// </summary>
+        [Column("blood_group")]
+        public string? L02F07 { get; set; }
+
+        /// <summary>
+        /// Represents patient height
+        /// </summary>
+        [Column("height_cm")]
+        public int? L02F08 { get; set; }
+
+        /// <summary>
+        /// Represents patient weight
+        /// </summary>
+        [Column("weight_kg")]
+        public int? L02F09 { get; set; }
+
+        /// <summary>
+        /// Represents patient chronic_conditions
+        /// </summary>
+        [Column("chronic_conditions")]
+        public string? L02F10 { get; set; }
+
         #endregion
     }
 }

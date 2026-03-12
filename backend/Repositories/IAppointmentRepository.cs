@@ -74,6 +74,57 @@ namespace backend.Repositories
         /// <param name="appointment">The appointment entity.</param>
         Task UpdateAppointmentAsync(TBL04 appointment);
 
+        /// <summary>
+        /// Creates a new appointment slot and returns identifier.
+        /// </summary>
+        /// <param name="slot">The appointment slot entity.</param>
+        /// <returns>The created slot identifier.</returns>
+        Task<int> CreateAppointmentSlotAsync(TBL07 slot);
+
+        /// <summary>
+        /// Retrieves all appointment slots for a doctor, optionally filtered by clinic.
+        /// </summary>
+        /// <param name="doctorUserId">The doctor user identifier.</param>
+        /// <param name="clinicId">Optional clinic identifier to filter slots.</param>
+        /// <param name="includeBooked">Whether to include booked slots.</param>
+        /// <returns>A list of appointment slots with clinic data.</returns>
+        Task<List<TBL07>> GetDoctorSlotsAsync(int doctorUserId, int? clinicId = null, bool includeBooked = true);
+
+        /// <summary>
+        /// Retrieves available (not booked) appointment slots for a doctor.
+        /// </summary>
+        /// <param name="doctorUserId">The doctor user identifier.</param>
+        /// <param name="clinicId">Optional clinic identifier to filter slots.</param>
+        /// <returns>A list of available appointment slots.</returns>
+        Task<List<TBL07>> GetAvailableSlotsByDoctorAsync(int doctorUserId, int? clinicId = null);
+
+        /// <summary>
+        /// Finds an appointment slot by identifier.
+        /// </summary>
+        /// <param name="slotId">The slot identifier.</param>
+        /// <returns>The slot entity when found; otherwise null.</returns>
+        Task<TBL07?> FindSlotByIdAsync(int slotId);
+
+        /// <summary>
+        /// Deletes an appointment slot.
+        /// </summary>
+        /// <param name="slot">The slot entity to delete.</param>
+        Task DeleteSlotAsync(TBL07 slot);
+
+        /// <summary>
+        /// Marks a slot as booked or available.
+        /// </summary>
+        /// <param name="slotId">The slot identifier.</param>
+        /// <param name="isBooked">Whether the slot is booked.</param>
+        Task MarkSlotAsBookedAsync(int slotId, bool isBooked);
+
+        /// <summary>
+        /// Checks if a clinic exists by identifier.
+        /// </summary>
+        /// <param name="clinicId">The clinic identifier.</param>
+        /// <returns>True if clinic exists; otherwise false.</returns>
+        Task<bool> DoesClinicExistAsync(int clinicId);
+
         #endregion
     }
 }

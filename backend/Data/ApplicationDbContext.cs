@@ -43,6 +43,21 @@ namespace backend.Data
         /// </summary>
         public DbSet<TBL04> Appointments { get; set; }
 
+        /// <summary>
+        /// Gets or sets the clinic table mapping.
+        /// </summary>
+        public DbSet<TBL05> Clinics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the doctor-clinic mapping table.
+        /// </summary>
+        public DbSet<TBL06> DoctorClinics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the appointment slot table mapping.
+        /// </summary>
+        public DbSet<TBL07> AppointmentSlots { get; set; }
+
         #endregion
 
         #region Protected Methods
@@ -59,7 +74,7 @@ namespace backend.Data
             {
                 entity.ToTable("users");
                 entity.HasIndex(e => e.L01F04).IsUnique();
-                entity.Property(e => e.L01F08).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.L01F08).HasColumnType("datetime");
                 entity.Property(e => e.L01F02)
                     .HasConversion<string>();
             });
@@ -67,7 +82,7 @@ namespace backend.Data
             modelBuilder.Entity<TBL02>(entity =>
             {
                 entity.ToTable("patients");
-                entity.Property(e => e.L02F05).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.L02F05).HasColumnType("datetime");
 
                 entity.HasOne(p => p.L02F06)
                     .WithOne(u => u.L01F09)
@@ -78,7 +93,7 @@ namespace backend.Data
             modelBuilder.Entity<TBL03>(entity =>
             {
                 entity.ToTable("doctors");
-                entity.Property(e => e.L03F06).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.L03F06).HasColumnType("datetime");
 
                 entity.HasOne(d => d.L03F07)
                     .WithOne(u => u.L01F10)
@@ -91,10 +106,8 @@ namespace backend.Data
                 entity.ToTable("appointments");
                 entity.Property(e => e.L04F06)
                     .HasConversion<string>();
-                entity.Property(e => e.L04F08)
-                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
-                entity.Property(e => e.L04F09)
-                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.L04F08).HasColumnType("datetime");
+                entity.Property(e => e.L04F09).HasColumnType("datetime");
 
                 entity.HasIndex(e => new { e.L04F03, e.L04F04 });
                 entity.HasIndex(e => new { e.L04F02, e.L04F04 });
@@ -107,6 +120,48 @@ namespace backend.Data
                 entity.HasOne<TBL01>()
                     .WithMany()
                     .HasForeignKey(e => e.L04F03)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<TBL05>(entity =>
+            {
+                entity.ToTable("clinics");
+                entity.Property(e => e.L05F10).HasColumnType("datetime");
+            });
+
+            modelBuilder.Entity<TBL06>(entity =>
+            {
+                entity.ToTable("doctor_clinics");
+                entity.Property(e => e.L06F05).HasColumnType("datetime");
+                entity.HasIndex(e => new { e.L06F02, e.L06F03 }).IsUnique();
+
+                entity.HasOne(dc => dc.L06F06)
+                    .WithMany()
+                    .HasForeignKey(dc => dc.L06F02)
+                    .HasPrincipalKey(d => d.L03F02)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(dc => dc.L06F07)
+                    .WithMany()
+                    .HasForeignKey(dc => dc.L06F03)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<TBL07>(entity =>
+            {
+                entity.ToTable("appointment_slots");
+                entity.Property(e => e.L07F07).HasColumnType("datetime");
+                entity.HasIndex(e => new { e.L07F02, e.L07F03, e.L07F04 }).IsUnique();
+
+                entity.HasOne(slot => slot.L07F08)
+                    .WithMany()
+                    .HasForeignKey(slot => slot.L07F02)
+                    .HasPrincipalKey(d => d.L03F02)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(slot => slot.L07F09)
+                    .WithMany()
+                    .HasForeignKey(slot => slot.L07F03)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }

@@ -54,6 +54,36 @@ namespace backend.Models
         [ForeignKey("L03F02")]
         public TBL01 L03F07 { get; set; } = null!;
 
+        /// <summary>
+        /// Represents doctor bio
+        /// </summary>
+        [Column("bio")]
+        public string L03F08 { get; set; } = String.Empty;
+
+
+        /// <summary>
+        /// Represents doctor consultation fee
+        /// </summary>
+
+        [Column("consultation_fee")]
+        public decimal L03F10 { get; set; } = 0;
+
+
+        /// <summary>
+        /// Represents doctor avg rating
+        /// </summary>
+
+        [Column("rating_avg")]
+        public decimal L03F11 { get; set; } = 0;
+
+
+        /// <summary>
+        /// Represents doctor total reviews
+        /// </summary>
+
+        [Column("total_reviews")]
+        public int L03F12 { get; set; } = 0;
+
         #endregion
     }
 }

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LandingPage from "./components/landing/LandingPage";
 import Signup from "./components/auth/Signup";
 import Login from "./components/auth/Login";
+import DoctorDashboard from "./components/dashboard/DoctorDashboard";
 import CustomToaster from "./components/ui/CustomToaster";
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
       </Routes>
     </Router>
   );

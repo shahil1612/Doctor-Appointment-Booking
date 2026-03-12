@@ -78,6 +78,48 @@ namespace backend.Services
         /// </summary>
         Task CancelFutureAppointmentSaveAsync();
 
+        /// <summary>
+        /// Prepares appointment slot creation workflow by mapping request DTO to entity.
+        /// </summary>
+        /// <param name="doctorUserId">The doctor user identifier.</param>
+        /// <param name="request">The slot creation request payload.</param>
+        Task CreateSlotPresaveAsync(int doctorUserId, CreateAppointmentSlotRequest request);
+
+        /// <summary>
+        /// Validates prepared slot creation workflow state and business rules.
+        /// </summary>
+        Task CreateSlotValidateAsync();
+
+        /// <summary>
+        /// Persists validated slot creation workflow state.
+        /// </summary>
+        /// <returns>The created slot response.</returns>
+        Task<AppointmentSlotResponse> CreateSlotSaveAsync();
+
+        /// <summary>
+        /// Retrieves all appointment slots for a doctor.
+        /// </summary>
+        /// <param name="doctorUserId">The doctor user identifier.</param>
+        /// <param name="clinicId">Optional clinic identifier to filter slots.</param>
+        /// <param name="includeBooked">Whether to include booked slots.</param>
+        /// <returns>A list of appointment slots.</returns>
+        Task<List<AppointmentSlotResponse>> GetDoctorSlotsAsync(int doctorUserId, int? clinicId = null, bool includeBooked = true);
+
+        /// <summary>
+        /// Retrieves available appointment slots for a specific doctor.
+        /// </summary>
+        /// <param name="doctorUserId">The doctor user identifier.</param>
+        /// <param name="clinicId">Optional clinic identifier to filter slots.</param>
+        /// <returns>A list of available slots.</returns>
+        Task<List<AppointmentSlotResponse>> GetAvailableSlotsForDoctorAsync(int doctorUserId, int? clinicId = null);
+
+        /// <summary>
+        /// Deletes an appointment slot if it is not booked.
+        /// </summary>
+        /// <param name="doctorUserId">The doctor user identifier.</param>
+        /// <param name="slotId">The slot identifier.</param>
+        Task DeleteSlotAsync(int doctorUserId, int slotId);
+
         #endregion
     }
 }
