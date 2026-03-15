@@ -78,6 +78,18 @@
         }
       }
     },
+    "/api/Appointments/pending": {
+      "get": {
+        "tags": [
+          "Appointments"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Appointments/doctor/slots": {
       "post": {
         "tags": [
@@ -152,18 +164,6 @@
               "format": "int32"
             }
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Appointments/doctor/pending": {
-      "get": {
-        "tags": [
-          "Appointments"
         ],
         "responses": {
           "200": {

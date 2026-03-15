@@ -64,6 +64,16 @@ namespace backend.DTOs
         [MapProperty("L04F09")]
         public DateTime UpdatedAtUtc { get; set; }
 
+        /// <summary>
+        /// Gets or sets doctor full name (not mapped from model, populated by service).
+        /// </summary>
+        public string? DoctorName { get; set; }
+
+        /// <summary>
+        /// Gets or sets patient full name (not mapped from model, populated by service).
+        /// </summary>
+        public string? PatientName { get; set; }
+
         #endregion
     }
 }

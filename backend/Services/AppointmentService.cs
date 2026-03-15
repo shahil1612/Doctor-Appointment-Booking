@@ -83,6 +83,21 @@ namespace backend.Services
 
                 AvailableDoctorResponse response = _reflectionMapper.Map<TBL01, AvailableDoctorResponse>(doctor.L03F07);
                 _reflectionMapper.MapToExisting<TBL03, AvailableDoctorResponse>(doctor, response);
+                
+                // Fetch and include clinics where doctor practices
+                List<TBL06> doctorClinics = await _appointmentRepository.GetDoctorClinicsAsync(doctor.L03F02);
+                response.Clinics = doctorClinics
+                    .Select(dc => new DoctorClinicResponse
+                    {
+                        ClinicId = dc.L06F07.L05F01,
+                        Name = dc.L06F07.L05F02,
+                        City = dc.L06F07.L05F04,
+                        Address = dc.L06F07.L05F03,
+                        State = dc.L06F07.L05F05,
+                        ConsultationFee = dc.L06F04
+                    })
+                    .ToList();
+
                 doctorResponses.Add(response);
             }
 
@@ -151,8 +166,9 @@ namespace backend.Services
                 throw new AppException("Cannot book a slot in the past.", StatusCodes.Status400BadRequest);
             }
 
-            // Set appointment time from slot
+            // Set appointment time and clinic from slot
             _createAppointmentState.Appointment.L04F04 = slot.L07F04;
+            _createAppointmentState.Appointment.L04F10 = slot.L07F03; // Set clinic ID from slot
         }
 
         /// <inheritdoc/>
@@ -178,21 +194,47 @@ namespace backend.Services
             return response;
         }
 
-        /// <inheritdoc/>
-        public async Task<List<AppointmentResponse>> GetPendingAppointmentsAsync(int doctorUserId)
+        /// <summary>
+        /// Retrieves pending appointments for a user (doctor or patient).
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="userType">The type of user (DOCTOR or PATIENT).</param>
+        /// <returns>A list of pending appointments.</returns>
+        public async Task<List<AppointmentResponse>> GetPendingAppointmentsByUserAsync(int userId, UserType userType)
         {
-            bool doctorExists = await _appointmentRepository.DoesDoctorExistAsync(doctorUserId);
-            if (!doctorExists)
+            TBL01? user = await _appointmentRepository.FindUserByIdAsync(userId);
+            if (user == null || user.L01F02 != userType)
             {
-                throw new AppException("Doctor profile not found.", StatusCodes.Status400BadRequest);
+                throw new AppException($"{userType} profile not found.", StatusCodes.Status400BadRequest);
             }
 
-            List<TBL04> appointments = await _appointmentRepository
-                .GetDoctorAppointmentsByStatusAsync(doctorUserId, AppointmentStatus.PENDING);
+            List<TBL04> appointments = userType == UserType.DOCTOR
+                ? await _appointmentRepository.GetDoctorAppointmentsByStatusAsync(userId, AppointmentStatus.PENDING)
+                : await _appointmentRepository.GetPatientAppointmentsByStatusAsync(userId, AppointmentStatus.PENDING);
 
-            List<AppointmentResponse> responses = appointments
-                .Select(appointment => _reflectionMapper.Map<TBL04, AppointmentResponse>(appointment))
-                .ToList();
+            List<AppointmentResponse> responses = new List<AppointmentResponse>();
+            foreach (TBL04 appointment in appointments)
+            {
+                AppointmentResponse response = _reflectionMapper.Map<TBL04, AppointmentResponse>(appointment);
+
+                Console.WriteLine("Appointment Status ye rahaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", response.Status.ToString());
+                
+                // Populate doctor name
+                TBL01? doctor = await _appointmentRepository.FindUserByIdAsync(appointment.L04F03);
+                if (doctor != null)
+                {
+                    response.DoctorName = doctor.L01F03;
+                }
+
+                // Populate patient name
+                TBL01? patient = await _appointmentRepository.FindUserByIdAsync(appointment.L04F02);
+                if (patient != null)
+                {
+                    response.PatientName = patient.L01F03;
+                }
+
+                responses.Add(response);
+            }
 
             return responses;
         }

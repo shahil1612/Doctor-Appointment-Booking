@@ -1,13 +1,25 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+// eslint-disable-next-line no-unused-vars
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { User, Stethoscope, Mail, Lock, LogIn, Home } from "lucide-react";
 import FormInput from "../ui/FormInput";
 import ParticleBackground from "../ui/ParticleBackground";
 import toast from "react-hot-toast";
+import { authAPI } from "../../services/api";
+import {
+  loginSuccess,
+  mapBackendUserType,
+  selectIsAuthenticated,
+  selectUserType,
+} from "../../store/authSlice";
 
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const currentUserType = useSelector(selectUserType);
   const [userType, setUserType] = useState("PATIENT");
   const [formData, setFormData] = useState({
     UserType: "PATIENT",
@@ -15,6 +27,17 @@ const Login = () => {
     Password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated || !currentUserType) {
+      return;
+    }
+
+    navigate(
+      currentUserType === "DOCTOR" ? "/doctor-dashboard" : "/patient-dashboard",
+      { replace: true },
+    );
+  }, [isAuthenticated, currentUserType, navigate]);
 
   const handleUserTypeToggle = (type) => {
     setUserType(type);
@@ -33,44 +56,33 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("https://localhost:7168/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const data = await authAPI.login(formData);
+      const backendUserType = mapBackendUserType(
+        data.Usertype || data.usertype,
+      );
+      const token = data.Token || data.token;
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // Store token and user data
-        // Backend returns: { Message, Token, Profile }
-        localStorage.setItem("token", data.Token || data.token);
-        localStorage.setItem("userType", formData.UserType);
-        localStorage.setItem(
-          "userProfile",
-          JSON.stringify(data.Profile || data.profile),
-        );
-
-        toast.success(data.Message || data.message || "Login successful!");
-
-        // Redirect based on user type
-        setTimeout(() => {
-          if (formData.UserType === "PATIENT") {
-            navigate("/patient-dashboard");
-          } else {
-            navigate("/doctor-dashboard");
-          }
-        }, 1000);
-      } else {
-        // Error response: { Message: "error message" }
-        toast.error(
-          data.Message || data.message || "Login failed. Please try again.",
-        );
+      if (!token || !backendUserType) {
+        throw new Error("Invalid login response from server.");
       }
+
+      dispatch(
+        loginSuccess({
+          token,
+          userType: backendUserType,
+        }),
+      );
+
+      toast.success(data.Message || data.message || "Login successful!");
+
+      navigate(
+        backendUserType === "DOCTOR"
+          ? "/doctor-dashboard"
+          : "/patient-dashboard",
+        { replace: true },
+      );
     } catch (error) {
-      toast.error("Network error. Please check your connection.");
+      toast.error(error.message || "Login failed. Please try again.");
       console.error("Login error:", error);
     } finally {
       setIsLoading(false);

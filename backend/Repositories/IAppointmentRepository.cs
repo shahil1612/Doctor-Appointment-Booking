@@ -125,6 +125,21 @@ namespace backend.Repositories
         /// <returns>True if clinic exists; otherwise false.</returns>
         Task<bool> DoesClinicExistAsync(int clinicId);
 
+        /// <summary>
+        /// Retrieves all clinics where a doctor practices.
+        /// </summary>
+        /// <param name="doctorUserId">The doctor user identifier.</param>
+        /// <returns>A list of doctor-clinic mappings with clinic data.</returns>
+        Task<List<TBL06>> GetDoctorClinicsAsync(int doctorUserId);
+
+        /// <summary>
+        /// Retrieves patient appointments for a specific status.
+        /// </summary>
+        /// <param name="patientUserId">The patient user identifier.</param>
+        /// <param name="status">The status to filter.</param>
+        /// <returns>A list of matching appointments.</returns>
+        Task<List<TBL04>> GetPatientAppointmentsByStatusAsync(int patientUserId, AppointmentStatus status);
+
         #endregion
     }
 }

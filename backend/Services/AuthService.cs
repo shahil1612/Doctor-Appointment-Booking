@@ -127,16 +127,9 @@ namespace backend.Services
         {
             TBL01? user = await _userRepository.FindUserByEmailAsync(request.Email);
 
-            if (user == null)
+            if (user == null || user.L01F02 != request.UserType)
             {
                 throw new AppException("Invalid credentials.", StatusCodes.Status401Unauthorized);
-            }
-
-            if (user.L01F02 != request.UserType)
-            {
-                throw new AppException(
-                    $"You are registered as {user.L01F02}. Please login as {user.L01F02}.",
-                    StatusCodes.Status401Unauthorized);
             }
 
             bool isMatch = BCrypt.Net.BCrypt.Verify(request.Password, user.L01F07);
@@ -147,35 +140,11 @@ namespace backend.Services
 
             string token = _tokenService.GenerateToken(user.L01F01, user.L01F02);
 
-            object profile;
-            if (user.L01F02 == UserType.PATIENT)
-            {
-                PatientProfile patientProfile = _reflectionMapper.Map<TBL01, PatientProfile>(user);
-                TBL02? patient = await _userRepository.FindPatientByUserIdAsync(user.L01F01);
-                if (patient != null)
-                {
-                    _reflectionMapper.MapToExisting<TBL02, PatientProfile>(patient, patientProfile);
-                }
-
-                profile = patientProfile;
-            }
-            else
-            {
-                DoctorProfile doctorProfile = _reflectionMapper.Map<TBL01, DoctorProfile>(user);
-                TBL03? doctor = await _userRepository.FindDoctorByUserIdAsync(user.L01F01);
-                if (doctor != null)
-                {
-                    _reflectionMapper.MapToExisting<TBL03, DoctorProfile>(doctor, doctorProfile);
-                }
-
-                profile = doctorProfile;
-            }
-
             LoginResponse response = new LoginResponse
             {
                 Message = "Login successful.",
                 Token = token,
-                Profile = profile
+                Usertype = request.UserType
             };
 
             return response;

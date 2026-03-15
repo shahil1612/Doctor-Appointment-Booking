@@ -196,6 +196,35 @@ namespace backend.Repositories
                 .AnyAsync(clinic => clinic.L05F01 == clinicId);
         }
 
+        /// <summary>
+        /// Gets all clinics where a doctor practices.
+        /// </summary>
+        /// <param name="doctorUserId">The doctor user identifier.</param>
+        /// <returns>A list of clinics with consultation fees.</returns>
+        public async Task<List<TBL06>> GetDoctorClinicsAsync(int doctorUserId)
+        {
+            return await _context.DoctorClinics
+                .Include(dc => dc.L06F07)
+                .AsNoTracking()
+                .Where(dc => dc.L06F02 == doctorUserId)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Gets patient appointments for a specific status.
+        /// </summary>
+        /// <param name="patientUserId">The patient user identifier.</param>
+        /// <param name="status">The status to filter.</param>
+        /// <returns>A list of patient appointments matching the status.</returns>
+        public async Task<List<TBL04>> GetPatientAppointmentsByStatusAsync(int patientUserId, AppointmentStatus status)
+        {
+            return await _context.Appointments
+                .AsNoTracking()
+                .Where(appointment => appointment.L04F02 == patientUserId && appointment.L04F06 == status)
+                .OrderBy(appointment => appointment.L04F04)
+                .ToListAsync();
+        }
+
         #endregion
     }
 }

@@ -212,21 +212,7 @@ namespace backend.Migrations
                         .HasColumnType("int")
                         .HasColumnName("slot_id");
 
-                    b.Property<int>("L04F12L01F01")
-                        .HasColumnType("int");
-
-                    b.Property<int>("L04F13L01F01")
-                        .HasColumnType("int");
-
                     b.HasKey("L04F01");
-
-                    b.HasIndex("L04F10");
-
-                    b.HasIndex("L04F11");
-
-                    b.HasIndex("L04F12L01F01");
-
-                    b.HasIndex("L04F13L01F01");
 
                     b.HasIndex("L04F02", "L04F04");
 
@@ -397,38 +383,6 @@ namespace backend.Migrations
                         .HasForeignKey("L04F03")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("backend.Models.TBL05", "L04F14")
-                        .WithMany()
-                        .HasForeignKey("L04F10")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Models.TBL07", "L04F15")
-                        .WithMany()
-                        .HasForeignKey("L04F11")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Models.TBL01", "L04F12")
-                        .WithMany()
-                        .HasForeignKey("L04F12L01F01")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Models.TBL01", "L04F13")
-                        .WithMany()
-                        .HasForeignKey("L04F13L01F01")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("L04F12");
-
-                    b.Navigation("L04F13");
-
-                    b.Navigation("L04F14");
-
-                    b.Navigation("L04F15");
                 });
 
             modelBuilder.Entity("backend.Models.TBL06", b =>

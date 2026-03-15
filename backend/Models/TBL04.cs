@@ -78,30 +78,6 @@ namespace backend.Models
         [Column("slot_id")]
         public int L04F11 { get; set; } = 0;
 
-        /// <summary>
-        /// Represents related patient information.
-        /// </summary>
-        [ForeignKey(nameof(L04F02))]
-        public TBL01 L04F12 { get; set; } = null!;
-
-        /// <summary>
-        /// Represents related doctor information.
-        /// </summary>
-        [ForeignKey(nameof(L04F03))]
-        public TBL01 L04F13 { get; set; } = null!;
-
-        /// <summary>
-        /// Represents related clinic information.
-        /// </summary>
-        [ForeignKey(nameof(L04F10))]
-        public TBL05? L04F14 { get; set; }
-
-        /// <summary>
-        /// Represents related appointment slot information.
-        /// </summary>
-        [ForeignKey(nameof(L04F11))]
-        public TBL07? L04F15 { get; set; }
-
         #endregion
     }
 }

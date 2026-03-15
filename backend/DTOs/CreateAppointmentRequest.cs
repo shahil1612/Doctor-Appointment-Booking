@@ -23,6 +23,7 @@ namespace backend.DTOs
         /// </summary>
         [Required(ErrorMessage = "Please select an appointment slot.")]
         [Range(1, int.MaxValue, ErrorMessage = "Please select a valid appointment slot.")]
+        [MapProperty("L04F11")]
         public int SlotId { get; set; }
 
         /// <summary>

@@ -45,6 +45,23 @@ namespace backend.DTOs
         [MapProperty("L03F05")]
         public int? YearsExperience { get; set; }
 
+        /// <summary>
+        /// Gets or sets doctor bio.
+        /// </summary>
+        [MapProperty("L03F08")]
+        public string? Bio { get; set; }
+
+        /// <summary>
+        /// Gets or sets doctor average rating.
+        /// </summary>
+        [MapProperty("L03F11")]
+        public decimal Rating { get; set; }
+
+        /// <summary>
+        /// Gets or sets clinics where doctor practices.
+        /// </summary>
+        public List<DoctorClinicResponse> Clinics { get; set; } = new List<DoctorClinicResponse>();
+
         #endregion
     }
 }

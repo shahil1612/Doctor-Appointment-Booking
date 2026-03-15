@@ -1,4 +1,5 @@
 using backend.DTOs;
+using backend.Models;
 
 namespace backend.Services
 {
@@ -36,11 +37,12 @@ namespace backend.Services
         Task<AppointmentResponse> CreateAppointmentSaveAsync();
 
         /// <summary>
-        /// Retrieves doctor pending appointments.
+        /// Retrieves pending appointments for both doctor and patient.
         /// </summary>
-        /// <param name="doctorUserId">The doctor user identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="userType">The type of user (DOCTOR or PATIENT).</param>
         /// <returns>A list of pending appointments.</returns>
-        Task<List<AppointmentResponse>> GetPendingAppointmentsAsync(int doctorUserId);
+        Task<List<AppointmentResponse>> GetPendingAppointmentsByUserAsync(int userId, UserType userType);
 
         /// <summary>
         /// Prepares decide appointment workflow state.

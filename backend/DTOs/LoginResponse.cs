@@ -1,3 +1,5 @@
+using backend.Models;
+
 namespace backend.DTOs
 {
     /// <summary>
@@ -18,9 +20,9 @@ namespace backend.DTOs
         public string Token { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets user profile payload.
+        /// Gets or sets user type.
         /// </summary>
-        public object Profile { get; set; } = null!;
+        public UserType Usertype { get; set; }
 
         #endregion
     }

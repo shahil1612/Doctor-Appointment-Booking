@@ -102,6 +102,20 @@ namespace backend.Controllers
             return StatusCode(201, response);
         }
 
+        /// <summary>
+        /// Retrieves pending appointments for both doctor and patient.
+        /// </summary>
+        /// <returns>A list of pending appointments.</returns>
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPendingAppointments()
+        {
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            List<AppointmentResponse> response = await _appointmentService.GetPendingAppointmentsByUserAsync(currentUser.UserId, currentUser.Role);
+
+            return Ok(response);
+        }
+
         #endregion
 
         #region Doctor Endpoints
@@ -169,24 +183,6 @@ namespace backend.Controllers
             return Ok(new { message = "Appointment slot deleted successfully." });
         }
 
-        /// <summary>
-        /// Retrieves doctor pending appointment requests.
-        /// </summary>
-        /// <returns>A list of pending appointments.</returns>
-        [HttpGet("doctor/pending")]
-        public async Task<IActionResult> GetPendingAppointments()
-        {
-            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
-
-            if (currentUser.Role != UserType.DOCTOR)
-            {
-                throw new AppException("You are not authorized to access this resource.", StatusCodes.Status403Forbidden);
-            }
-
-            List<AppointmentResponse> response = await _appointmentService.GetPendingAppointmentsAsync(currentUser.UserId);
-
-            return Ok(response);
-        }
 
         /// <summary>
         /// Approves or declines a pending appointment.

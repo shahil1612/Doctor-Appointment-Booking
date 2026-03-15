@@ -18,6 +18,7 @@ import FormInput from "../ui/FormInput";
 import FormSelect from "../ui/FormSelect";
 import ParticleBackground from "../ui/ParticleBackground";
 import toast from "react-hot-toast";
+import { authAPI } from "../../services/api";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -79,34 +80,18 @@ const Signup = () => {
           : null,
       };
 
-      const response = await fetch("https://localhost:7168/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const data = await authAPI.signup(requestBody);
 
-      const data = await response.json();
+      toast.success(
+        data.message || data.Message || "Account created successfully!",
+      );
 
-      if (response.ok) {
-        // Success - backend returns 201 with { message: "User registered successfully." }
-        toast.success(
-          data.message || data.Message || "Account created successfully!",
-        );
-
-        // Redirect to login page after success
-        setTimeout(() => {
-          navigate("/login");
-        }, 1500);
-      } else {
-        // Error - backend returns { Message: "error message" }
-        toast.error(
-          data.Message || data.message || "Signup failed. Please try again.",
-        );
-      }
+      // Redirect to login page after success
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
     } catch (error) {
-      toast.error("Network error. Please check your connection.");
+      toast.error(error.message || "Signup failed. Please try again.");
       console.error("Signup error:", error);
     } finally {
       setIsLoading(false);

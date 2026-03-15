@@ -1,10 +1,14 @@
 import { Bell, Settings, LogOut, Search } from "lucide-react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { useState } from "react";
+import { logout } from "../../store/authSlice";
 
 const DashboardHeader = ({ doctorInfo }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications] = useState([
     {
@@ -28,6 +32,11 @@ const DashboardHeader = ({ doctorInfo }) => {
   ]);
 
   const unreadCount = notifications.filter((n) => n.unread).length;
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login", { replace: true });
+  };
 
   return (
     <header className="bg-[#000000] text-white sticky top-0 z-50 border-b border-white/6">
@@ -146,6 +155,7 @@ const DashboardHeader = ({ doctorInfo }) => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={handleLogout}
               className="p-2 hover:bg-red-50 rounded-xl transition-colors group"
               title="Logout"
             >
