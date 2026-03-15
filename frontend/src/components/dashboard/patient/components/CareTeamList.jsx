@@ -1,6 +1,6 @@
-import Card from "./ui/Card";
-import Avatar from "./ui/Avatar";
-import Button from "./ui/Button";
+import Card from "../../ui/Card";
+import Avatar from "../../ui/Avatar";
+import Button from "../../ui/Button";
 
 const CareTeamMemberCard = ({ member }) => {
   return (

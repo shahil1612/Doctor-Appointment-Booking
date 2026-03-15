@@ -1,7 +1,7 @@
-import Avatar from "./ui/Avatar";
-import Badge from "./ui/Badge";
+import Avatar from "../../ui/Avatar";
+import Badge from "../../ui/Badge";
 
-const Sidebar = ({ activePage, setActivePage, patientData }) => {
+const Sidebar = ({ activePage, setActivePage, patientData, onLogout }) => {
   const navItems = [
     { id: "overview", icon: "⬡", label: "Overview", section: "health" },
     {
@@ -117,6 +117,15 @@ const Sidebar = ({ activePage, setActivePage, patientData }) => {
           />
         </div>
 
+        {/* Logout Button */}
+        <div className="pt-4 border-t border-gray-200">
+          <button
+            onClick={onLogout}
+            className="w-full px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-all text-center border border-red-200"
+          >
+            🚪 Logout
+          </button>
+        </div>
       </div>
     </aside>
   );

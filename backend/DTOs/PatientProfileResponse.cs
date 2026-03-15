@@ -81,6 +81,16 @@ namespace backend.DTOs
         [MapProperty("L02F10")]
         public string? ChronicConditions { get; set; }
 
+        /// <summary>
+        /// Gets or sets the number of appointments with the doctor (not mapped from model, populated by service).
+        /// </summary>
+        public int AppointmentCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date of the last appointment with the doctor (not mapped from model, populated by service).
+        /// </summary>
+        public DateTime? LastAppointmentDate { get; set; }
+
         #endregion
     }
 }

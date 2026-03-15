@@ -1,5 +1,5 @@
-import Badge from "./ui/Badge";
-import Button from "./ui/Button";
+import Badge from "../../ui/Badge";
+import Button from "../../ui/Button";
 
 const AppointmentDetailsModal = ({ isOpen, onClose, appointment }) => {
   console.log("Selected appointment for details:", appointment);

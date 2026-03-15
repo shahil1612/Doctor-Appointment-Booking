@@ -45,6 +45,15 @@ namespace backend.Services
         Task<List<AppointmentResponse>> GetPendingAppointmentsByUserAsync(int userId, UserType userType);
 
         /// <summary>
+        /// Retrieves appointments by status for both doctor and patient.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="userType">The type of user (DOCTOR or PATIENT).</param>
+        /// <param name="status">The appointment status to filter by.</param>
+        /// <returns>A list of appointments with the specified status.</returns>
+        Task<List<AppointmentResponse>> GetAppointmentsByStatusAsync(int userId, UserType userType, AppointmentStatus status);
+
+        /// <summary>
         /// Prepares decide appointment workflow state.
         /// </summary>
         /// <param name="doctorUserId">The doctor user identifier.</param>

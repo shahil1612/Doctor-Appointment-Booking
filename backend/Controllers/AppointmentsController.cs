@@ -111,7 +111,49 @@ namespace backend.Controllers
         {
             CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
 
-            List<AppointmentResponse> response = await _appointmentService.GetPendingAppointmentsByUserAsync(currentUser.UserId, currentUser.Role);
+            //List<AppointmentResponse> response = await _appointmentService.GetPendingAppointmentsByUserAsync(currentUser.UserId, currentUser.Role);
+            List<AppointmentResponse> response = await _appointmentService.GetAppointmentsByStatusAsync(currentUser.UserId, currentUser.Role, AppointmentStatus.PENDING);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Retrieves approved appointments.
+        /// </summary>
+        /// <returns>A list of approved appointments.</returns>
+        [HttpGet("approved")]
+        public async Task<IActionResult> GetApprovedAppointments()
+        {
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            List<AppointmentResponse> response = await _appointmentService.GetAppointmentsByStatusAsync(currentUser.UserId, currentUser.Role, AppointmentStatus.APPROVED);
+
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Retrieves declined appointments.
+        /// </summary>
+        /// <returns>A list of declined appointments.</returns>
+        [HttpGet("declined")]
+        public async Task<IActionResult> GetDeclinedAppointments()
+        {
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            List<AppointmentResponse> response = await _appointmentService.GetAppointmentsByStatusAsync(currentUser.UserId, currentUser.Role, AppointmentStatus.DECLINED);
+
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Retrieves cancelled appointments.
+        /// </summary>
+        /// <returns>A list of cancelled appointments.</returns>
+        [HttpGet("cancelled")]
+        public async Task<IActionResult> GetCancelledAppointments()
+        {
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            List<AppointmentResponse> response = await _appointmentService.GetAppointmentsByStatusAsync(currentUser.UserId, currentUser.Role, AppointmentStatus.CANCELLED);
 
             return Ok(response);
         }

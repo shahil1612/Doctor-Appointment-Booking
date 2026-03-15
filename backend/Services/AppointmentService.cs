@@ -240,6 +240,44 @@ namespace backend.Services
         }
 
         /// <inheritdoc/>
+        public async Task<List<AppointmentResponse>> GetAppointmentsByStatusAsync(int userId, UserType userType, AppointmentStatus status)
+        {
+            TBL01? user = await _appointmentRepository.FindUserByIdAsync(userId);
+            if (user == null || user.L01F02 != userType)
+            {
+                throw new AppException($"{userType} profile not found.", StatusCodes.Status400BadRequest);
+            }
+
+            List<TBL04> appointments = userType == UserType.DOCTOR
+                ? await _appointmentRepository.GetDoctorAppointmentsByStatusAsync(userId, status)
+                : await _appointmentRepository.GetPatientAppointmentsByStatusAsync(userId, status);
+
+            List<AppointmentResponse> responses = new List<AppointmentResponse>();
+            foreach (TBL04 appointment in appointments)
+            {
+                AppointmentResponse response = _reflectionMapper.Map<TBL04, AppointmentResponse>(appointment);
+
+                // Populate doctor name
+                TBL01? doctor = await _appointmentRepository.FindUserByIdAsync(appointment.L04F03);
+                if (doctor != null)
+                {
+                    response.DoctorName = doctor.L01F03;
+                }
+
+                // Populate patient name
+                TBL01? patient = await _appointmentRepository.FindUserByIdAsync(appointment.L04F02);
+                if (patient != null)
+                {
+                    response.PatientName = patient.L01F03;
+                }
+
+                responses.Add(response);
+            }
+
+            return responses;
+        }
+
+        /// <inheritdoc/>
         public Task DecideAppointmentPresaveAsync(int doctorUserId, int appointmentId, AppointmentDecisionRequest request)
         {
             _decideAppointmentState = new AppointmentDecisionWorkflowState
@@ -337,9 +375,9 @@ namespace backend.Services
                 throw new AppException("Only future appointments can be cancelled.", StatusCodes.Status400BadRequest);
             }
 
-            if (appointment.L04F06 != AppointmentStatus.PENDING && appointment.L04F06 != AppointmentStatus.APPROVED)
+            if (appointment.L04F06 != AppointmentStatus.APPROVED)
             {
-                throw new AppException("Only pending or approved appointments can be cancelled.", StatusCodes.Status400BadRequest);
+                throw new AppException("Only approved appointments can be cancelled.", StatusCodes.Status400BadRequest);
             }
 
             _cancelAppointmentState.Appointment = appointment;

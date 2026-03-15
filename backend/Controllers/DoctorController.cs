@@ -127,5 +127,28 @@ namespace backend.Controllers
         }
 
         #endregion
+
+        #region Patient Management Endpoints
+
+        /// <summary>
+        /// Retrieves all patients who have appointments with the current doctor.
+        /// </summary>
+        /// <returns>A list of patient profile responses.</returns>
+        [HttpGet("patients")]
+        public async Task<IActionResult> GetPatients()
+        {
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            if (currentUser.Role != UserType.DOCTOR)
+            {
+                throw new AppException("You are not authorized to access this resource.", StatusCodes.Status403Forbidden);
+            }
+
+            List<PatientProfileResponse> response = await _doctorService.GetDoctorPatientsAsync(currentUser.UserId);
+
+            return Ok(response);
+        }
+
+        #endregion
     }
 }

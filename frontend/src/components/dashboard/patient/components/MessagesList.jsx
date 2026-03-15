@@ -1,5 +1,5 @@
-import Card from "./ui/Card";
-import Avatar from "./ui/Avatar";
+import Card from "../../ui/Card";
+import Avatar from "../../ui/Avatar";
 
 const MessageItem = ({ message }) => {
   return (

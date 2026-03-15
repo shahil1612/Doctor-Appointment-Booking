@@ -59,6 +59,36 @@
   },
   {
     "ContainingType": "backend.Controllers.AppointmentsController",
+    "Method": "GetApprovedAppointments",
+    "RelativePath": "api/Appointments/approved",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.AppointmentsController",
+    "Method": "GetCancelledAppointments",
+    "RelativePath": "api/Appointments/cancelled",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.AppointmentsController",
+    "Method": "GetDeclinedAppointments",
+    "RelativePath": "api/Appointments/declined",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.AppointmentsController",
     "Method": "CreateSlot",
     "RelativePath": "api/Appointments/doctor/slots",
     "HttpMethod": "POST",
@@ -203,6 +233,16 @@
     "ContainingType": "backend.Controllers.DoctorController",
     "Method": "GetClinics",
     "RelativePath": "api/Doctor/clinics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.DoctorController",
+    "Method": "GetPatients",
+    "RelativePath": "api/Doctor/patients",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,

@@ -68,8 +68,10 @@ export const authAPI = {
     });
   },
 
-  logout: () => {
-    // Auth cleanup is handled in Redux slice.
+  logout: async () => {
+    // Client-side logout: clear auth state and session storage
+    // Backend logout is not required as JWT tokens are stateless
+    return true;
   },
 };
 
@@ -133,6 +135,24 @@ export const appointmentAPI = {
     });
   },
 
+  getApprovedAppointments: async () => {
+    return apiFetch("/appointments/approved", {
+      method: "GET",
+    });
+  },
+
+  getDeclinedAppointments: async () => {
+    return apiFetch("/appointments/declined", {
+      method: "GET",
+    });
+  },
+
+  getCancelledAppointments: async () => {
+    return apiFetch("/appointments/cancelled", {
+      method: "GET",
+    });
+  },
+
   decideAppointment: async (appointmentId, data) => {
     return apiFetch(`/appointments/${appointmentId}/decision`, {
       method: "PUT",
@@ -167,6 +187,75 @@ export const appointmentAPI = {
   deleteSlot: async (slotId) => {
     return apiFetch(`/appointments/doctor/slots/${slotId}`, {
       method: "DELETE",
+    });
+  },
+};
+
+/**
+ * Doctor API calls
+ */
+export const doctorAPI = {
+  getProfile: async () => {
+    return apiFetch("/doctor/profile", {
+      method: "GET",
+    });
+  },
+
+  updateProfile: async (data) => {
+    return apiFetch("/doctor/profile", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  getAppointments: async (status = null) => {
+    const query = new URLSearchParams();
+    if (status) {
+      query.append("status", status);
+    }
+    const endpoint = `/doctor/appointments${query.toString() ? `?${query}` : ""}`;
+    return apiFetch(endpoint, {
+      method: "GET",
+    });
+  },
+
+  getPatients: async () => {
+    return apiFetch("/doctor/patients", {
+      method: "GET",
+    });
+  },
+
+  getEarnings: async () => {
+    return apiFetch("/doctor/earnings", {
+      method: "GET",
+    });
+  },
+
+  // Clinic Management
+  createClinic: async (data) => {
+    return apiFetch("/doctor/clinic", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  getClinics: async () => {
+    return apiFetch("/doctor/clinics", {
+      method: "GET",
+    });
+  },
+
+  // Schedule management
+  getSchedule: async () => {
+    return apiFetch("/doctor/schedule", {
+      method: "GET",
+    });
+  },
+
+  updateSchedule: async (data) => {
+    return apiFetch("/doctor/schedule", {
+      method: "PUT",
+      body: JSON.stringify(data),
     });
   },
 };

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import Sidebar from "./components/Sidebar";
-import Button from "./components/ui/Button";
+import Button from "../ui/Button";
 import ProfileModal from "./components/ProfileModal";
 import OverviewPage from "./pages/OverviewPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
@@ -10,10 +12,14 @@ import DocumentsPage from "./pages/DocumentsPage";
 import MessagesPage from "./pages/MessagesPage";
 import CareTeamPage from "./pages/CareTeamPage";
 import BillingPage from "./pages/BillingPage";
-import { patientAPI } from "../../../services/api";
+import { patientAPI, authAPI } from "../../../services/api";
+import { logout as logoutAction } from "../../../store/authSlice";
 import { getInitials, calculateAge } from "../../../utils/helpers.js";
+import toast from "react-hot-toast";
 
 const PatientDashboard = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [activePage, setActivePage] = useState("overview");
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -39,6 +45,19 @@ const PatientDashboard = () => {
   // Handle profile update after successful edit
   const handleProfileUpdate = (updatedProfile) => {
     setProfile(updatedProfile);
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await authAPI.logout();
+      dispatch(logoutAction());
+      toast.success("Logged out successfully!");
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Failed to logout. Please try again.");
+    }
   };
 
   // Prepare patient data for sidebar
@@ -128,6 +147,7 @@ const PatientDashboard = () => {
         activePage={activePage}
         setActivePage={setActivePage}
         patientData={patientData}
+        onLogout={handleLogout}
       />
 
       {/* Main Content */}

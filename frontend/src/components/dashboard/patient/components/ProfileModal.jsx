@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { formatDate } from "../../../../utils/helpers.js";
 import { patientAPI } from "../../../../services/api.js";
-import Button from "./ui/Button";
+import Button from "../../ui/Button";
 import toast from "react-hot-toast";
 
 const ProfileModal = ({ isOpen, onClose, profile, onProfileUpdate }) => {

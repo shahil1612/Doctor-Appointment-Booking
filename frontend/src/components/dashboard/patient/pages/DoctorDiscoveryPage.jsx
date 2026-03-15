@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { appointmentAPI } from "../../../../services/api.js";
-import Card from "../components/ui/Card";
-import Button from "../components/ui/Button";
+import Card from "../../ui/Card";
+import Button from "../../ui/Button";
 import toast from "react-hot-toast";
 
 const DoctorDiscoveryPage = ({ onDoctorSelect }) => {

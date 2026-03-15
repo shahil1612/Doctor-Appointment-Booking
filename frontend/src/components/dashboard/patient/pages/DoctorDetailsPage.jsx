@@ -1,5 +1,5 @@
-import Card from "../components/ui/Card";
-import Button from "../components/ui/Button";
+import Card from "../../ui/Card";
+import Button from "../../ui/Button";
 
 const DoctorDetailsPage = ({ doctor, onClinicSelect, onBack }) => {
   if (!doctor) {

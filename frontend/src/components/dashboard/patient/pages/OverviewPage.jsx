@@ -3,8 +3,8 @@ import { appointmentAPI } from "../../../../services/api.js";
 import SummaryCards from "../components/SummaryCards";
 import AppointmentsList from "../components/AppointmentsList";
 import AppointmentDetailsModal from "../components/AppointmentDetailsModal";
-import Card from "../components/ui/Card";
-import Button from "../components/ui/Button";
+import Card from "../../ui/Card";
+import Button from "../../ui/Button";
 
 const OverviewPage = () => {
   const [appointments, setAppointments] = useState([]);

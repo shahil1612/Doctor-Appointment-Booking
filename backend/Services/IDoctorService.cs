@@ -59,6 +59,13 @@ namespace backend.Services
         /// <returns>List of clinic responses with association details.</returns>
         Task<List<ClinicResponse>> GetDoctorClinicsAsync(int doctorUserId);
 
+        /// <summary>
+        /// Retrieves all unique patients who have appointments with the doctor.
+        /// </summary>
+        /// <param name="doctorUserId">The doctor user identifier.</param>
+        /// <returns>List of patient responses with appointment details.</returns>
+        Task<List<PatientProfileResponse>> GetDoctorPatientsAsync(int doctorUserId);
+
         #endregion
     }
 }

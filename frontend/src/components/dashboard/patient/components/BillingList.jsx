@@ -1,5 +1,5 @@
-import Card from "./ui/Card";
-import Badge from "./ui/Badge";
+import Card from "../../ui/Card";
+import Badge from "../../ui/Badge";
 
 const BillItem = ({ bill }) => {
   const statusVariant = {

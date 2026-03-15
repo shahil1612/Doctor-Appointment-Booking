@@ -19,6 +19,16 @@ namespace backend.Services
         private readonly IDoctorRepository _doctorRepository;
 
         /// <summary>
+        /// Represents appointment repository dependency.
+        /// </summary>
+        private readonly IAppointmentRepository _appointmentRepository;
+
+        /// <summary>
+        /// Represents patient repository dependency.
+        /// </summary>
+        private readonly IPatientRepository _patientRepository;
+
+        /// <summary>
         /// Represents reflection mapper dependency.
         /// </summary>
         private readonly IReflectionMapper _reflectionMapper;
@@ -41,10 +51,18 @@ namespace backend.Services
         /// Initializes a new instance of the <see cref="DoctorService"/> class.
         /// </summary>
         /// <param name="doctorRepository">The doctor repository.</param>
+        /// <param name="appointmentRepository">The appointment repository.</param>
+        /// <param name="patientRepository">The patient repository.</param>
         /// <param name="reflectionMapper">The reflection mapper.</param>
-        public DoctorService(IDoctorRepository doctorRepository, IReflectionMapper reflectionMapper)
+        public DoctorService(
+            IDoctorRepository doctorRepository,
+            IAppointmentRepository appointmentRepository,
+            IPatientRepository patientRepository,
+            IReflectionMapper reflectionMapper)
         {
             _doctorRepository = doctorRepository;
+            _appointmentRepository = appointmentRepository;
+            _patientRepository = patientRepository;
             _reflectionMapper = reflectionMapper;
         }
 
@@ -230,6 +248,63 @@ namespace backend.Services
             return responses;
         }
 
+        /// <inheritdoc/>
+        public async Task<List<PatientProfileResponse>> GetDoctorPatientsAsync(int doctorUserId)
+        {
+            // Verify doctor exists
+            bool doctorExists = await _doctorRepository.DoesDoctorExistAsync(doctorUserId);
+            if (!doctorExists)
+            {
+                throw new AppException("Doctor profile not found.", StatusCodes.Status404NotFound);
+            }
+
+            // Get all appointments for the doctor (all statuses)
+            List<TBL04> allAppointments = new List<TBL04>();
+
+            // Fetch appointments for each status
+            allAppointments.AddRange(await _appointmentRepository.GetDoctorAppointmentsByStatusAsync(doctorUserId, AppointmentStatus.PENDING));
+            allAppointments.AddRange(await _appointmentRepository.GetDoctorAppointmentsByStatusAsync(doctorUserId, AppointmentStatus.APPROVED));
+            allAppointments.AddRange(await _appointmentRepository.GetDoctorAppointmentsByStatusAsync(doctorUserId, AppointmentStatus.DECLINED));
+            allAppointments.AddRange(await _appointmentRepository.GetDoctorAppointmentsByStatusAsync(doctorUserId, AppointmentStatus.CANCELLED));
+
+            // Get unique patient IDs
+            List<int> uniquePatientIds = allAppointments
+                .Select(apt => apt.L04F02)
+                .Distinct()
+                .ToList();
+
+            // Fetch patient profiles
+            List<PatientProfileResponse> patientResponses = new List<PatientProfileResponse>();
+
+            foreach (int patientUserId in uniquePatientIds)
+            {
+                TBL02? patient = await _patientRepository.GetPatientByUserIdAsync(patientUserId);
+                if (patient != null && patient.L02F06 != null)
+                {
+                    PatientProfileResponse response = _reflectionMapper.Map<TBL01, PatientProfileResponse>(patient.L02F06);
+                    _reflectionMapper.MapToExisting<TBL02, PatientProfileResponse>(patient, response);
+
+                    // Add appointment count for this doctor
+                    int appointmentCount = allAppointments.Count(apt => apt.L04F02 == patientUserId);
+                    response.AppointmentCount = appointmentCount;
+
+                    // Get last appointment date for this doctor
+                    var patientAppointments = allAppointments
+                        .Where(apt => apt.L04F02 == patientUserId)
+                        .OrderByDescending(apt => apt.L04F04);
+                    response.LastAppointmentDate = patientAppointments.FirstOrDefault()?.L04F04;
+
+                    patientResponses.Add(response);
+                }
+            }
+
+            // Sort by name
+            patientResponses = patientResponses
+                .OrderBy(p => p.FullName)
+                .ToList();
+
+            return patientResponses;
+        }
         #endregion
     }
 }
