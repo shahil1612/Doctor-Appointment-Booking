@@ -22,9 +22,25 @@ const AppointmentsPage = ({ onBookNew }) => {
     const fetchAppointments = async () => {
       setLoading(true);
       try {
-        const data = await appointmentAPI.getPendingAppointments();
+        // Fetch all appointment states using Promise.all
+        const [pendingData, approvedData, declinedData, cancelledData] =
+          await Promise.all([
+            appointmentAPI.getPendingAppointments(),
+            appointmentAPI.getApprovedAppointments(),
+            appointmentAPI.getDeclinedAppointments(),
+            appointmentAPI.getCancelledAppointments(),
+          ]);
+
+        // Combine all appointments
+        const allAppointments = [
+          ...(pendingData || []),
+          ...(approvedData || []),
+          ...(declinedData || []),
+          ...(cancelledData || []),
+        ];
+
         // Transform backend response to match expected format
-        const transformed = data.map((apt) => {
+        const transformed = allAppointments.map((apt) => {
           const aptDate = new Date(apt.appointmentAtUtc);
           return {
             id: apt.appointmentId,
@@ -43,7 +59,9 @@ const AppointmentsPage = ({ onBookNew }) => {
                   ? "confirmed"
                   : apt.status === "declined"
                     ? "cancelled"
-                    : "completed",
+                    : apt.status === "cancelled"
+                      ? "cancelled"
+                      : "completed",
             appointmentAtUtc: apt.appointmentAtUtc,
             reason: apt.reason,
             doctorNotes: apt.doctorNotes,
@@ -67,17 +85,32 @@ const AppointmentsPage = ({ onBookNew }) => {
     fetchAppointments();
   }, [userType]);
 
-  // Separate upcoming and past appointments
+  // Separate upcoming, completed, and cancelled appointments
   const now = new Date();
+
+  // Upcoming: future date AND (pending or confirmed status)
   const upcomingAppts = appointments.filter((apt) => {
     const aptDate = new Date(apt.appointmentAtUtc);
-    return aptDate > now && apt.status !== "cancelled";
+    return (
+      aptDate > now && (apt.status === "pending" || apt.status === "confirmed")
+    );
   });
 
-  const pastAppts = appointments.filter((apt) => {
+  // Completed: past date AND (pending or confirmed status - meaning it was actually completed)
+  const completedAppts = appointments.filter((apt) => {
     const aptDate = new Date(apt.appointmentAtUtc);
-    return aptDate <= now || apt.status === "cancelled";
+    return (
+      aptDate <= now && (apt.status === "pending" || apt.status === "confirmed")
+    );
   });
+
+  // Cancelled/Declined: any appointment with cancelled or declined status
+  const cancelledAppts = appointments.filter((apt) => {
+    return apt.status === "cancelled";
+  });
+
+  // Combined past appointments for the "past" tab (completed + cancelled)
+  const pastAppts = [...completedAppts, ...cancelledAppts];
 
   const summaryData = [
     {
@@ -96,7 +129,7 @@ const AppointmentsPage = ({ onBookNew }) => {
     },
     {
       icon: "✅",
-      value: pastAppts.length.toString(),
+      value: completedAppts.length.toString(),
       label: "Completed",
       color: "green",
     },

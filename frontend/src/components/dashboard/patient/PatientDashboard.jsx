@@ -108,7 +108,9 @@ const PatientDashboard = () => {
   };
 
   const pageComponents = {
-    overview: <OverviewPage />,
+    overview: (
+      <OverviewPage onBookAppointment={() => setActivePage("appointments")} />
+    ),
     appointments: (
       <AppointmentsPage onBookNew={() => setActivePage("book-appointment")} />
     ),
@@ -172,14 +174,6 @@ const PatientDashboard = () => {
               <p className="text-sm text-gray-600 mt-1">{meta.sub}</p>
             </div>
             <div className="flex items-center gap-3">
-              {/* Notification Bell */}
-              <div className="relative">
-                <button className="w-10 h-10 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors">
-                  🔔
-                </button>
-                <div className="absolute top-1 right-1 w-2 h-2 bg-blue-600 rounded-full"></div>
-              </div>
-
               {/* Action Buttons */}
               {activePage === "appointments" && (
                 <Button

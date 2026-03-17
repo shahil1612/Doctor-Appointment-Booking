@@ -58,6 +58,11 @@ namespace backend.Data
         /// </summary>
         public DbSet<TBL07> AppointmentSlots { get; set; }
 
+        /// <summary>
+        /// Gets or sets the prescription table mapping.
+        /// </summary>
+        public DbSet<TBL08> Prescriptions { get; set; }
+
         #endregion
 
         #region Protected Methods

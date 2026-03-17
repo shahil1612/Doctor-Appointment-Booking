@@ -202,24 +202,25 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
-            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "DoctorService.cs",
               "DocumentMoniker": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Services\\DoctorService.cs",
               "RelativeDocumentMoniker": "Services\\DoctorService.cs",
-              "ToolTip": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Services\\DoctorService.cs*",
-              "RelativeToolTip": "Services\\DoctorService.cs*",
-              "ViewState": "AgIAAA4BAAAAAAAAAAAewCABAABBAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\sahil\\OneDrive\\Desktop\\Doctor Appointment Booking\\backend\\Services\\DoctorService.cs",
+              "RelativeToolTip": "Services\\DoctorService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACABAABBAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-15T11:49:12.258Z",
+              "IsPinned": true,
               "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
             },
             {
               "$type": "Document",
@@ -231,8 +232,7 @@
               "RelativeToolTip": "Controllers\\AppointmentsController.cs",
               "ViewState": "AgIAAG4AAAAAAAAAAAAtwHUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-25T10:17:45.273Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-25T10:17:45.273Z"
             },
             {
               "$type": "Document",
@@ -244,8 +244,7 @@
               "RelativeToolTip": "Services\\AppointmentService.cs",
               "ViewState": "AgIAAF4BAAAAAAAAAAAtwH0BAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-15T01:05:49.06Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-15T01:05:49.06Z"
             },
             {
               "$type": "Document",
@@ -269,8 +268,7 @@
               "RelativeToolTip": "Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-23T05:57:40.202Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-23T05:57:40.202Z"
             },
             {
               "$type": "Document",
@@ -306,12 +304,7 @@
               "RelativeToolTip": "Models\\TBL02.cs",
               "ViewState": "AgIAACQAAAAAAAAAAAA1wC4AAAAWAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-23T05:28:55.704Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+              "WhenOpened": "2026-02-23T05:28:55.704Z"
             },
             {
               "$type": "Document",
@@ -347,8 +340,7 @@
               "RelativeToolTip": "Controllers\\AuthController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAADAAAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-23T05:40:05.64Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-23T05:40:05.64Z"
             },
             {
               "$type": "Document",
@@ -793,6 +785,10 @@
               "ViewState": "AgIAAAAAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-02-23T06:08:16.121Z"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
             }
           ]
         }

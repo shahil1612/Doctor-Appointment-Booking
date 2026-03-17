@@ -9,7 +9,7 @@ import AppointmentsPage from "./pages/AppointmentsPage";
 import PatientsPage from "./pages/PatientsPage";
 import SchedulePage from "./pages/SchedulePage";
 import EarningsPage from "./pages/EarningsPage";
-import SettingsPage from "./pages/SettingsPage";
+
 import { doctorAPI, authAPI } from "../../../services/api";
 import { logout as logoutAction } from "../../../store/authSlice";
 import { getInitials } from "../../../utils/helpers.js";
@@ -90,10 +90,6 @@ const DoctorDashboard = () => {
       title: "Earnings",
       sub: "Track your income and transactions",
     },
-    settings: {
-      title: "Settings",
-      sub: "Manage your profile and preferences",
-    },
   };
 
   const pageComponents = {
@@ -102,7 +98,6 @@ const DoctorDashboard = () => {
     patients: <PatientsPage />,
     schedule: <SchedulePage />,
     earnings: <EarningsPage />,
-    settings: <SettingsPage />,
   };
 
   const meta = pageMeta[activePage];
