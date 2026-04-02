@@ -39,6 +39,11 @@ namespace backend.Services
         private AppointmentCancelWorkflowState? _cancelAppointmentState;
 
         /// <summary>
+        /// Represents in-memory workflow state for appointment completion.
+        /// </summary>
+        private AppointmentCancelWorkflowState? _completeAppointmentState;
+
+        /// <summary>
         /// Represents in-memory workflow state for slot creation.
         /// </summary>
         private CreateAppointmentSlotWorkflowState? _createSlotState;
@@ -653,6 +658,58 @@ namespace backend.Services
             }
 
             await _appointmentRepository.DeleteSlotAsync(slot);
+        }
+
+        /// <inheritdoc/>
+        public Task CompleteAppointmentPresaveAsync(int doctorUserId, int appointmentId, CancelAppointmentRequest request)
+        {
+            _completeAppointmentState = new AppointmentCancelWorkflowState
+            {
+                DoctorUserId = doctorUserId,
+                AppointmentId = appointmentId,
+                Request = request
+            };
+
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc/>
+        public async Task CompleteAppointmentValidateAsync()
+        {
+            if (_completeAppointmentState == null)
+            {
+                throw new AppException("Invalid appointment workflow state.", StatusCodes.Status400BadRequest);
+            }
+
+            TBL04 appointment = await ValidateDoctorAndGetOwnedAppointmentAsync(
+                _completeAppointmentState.DoctorUserId,
+                _completeAppointmentState.AppointmentId);
+
+            if (appointment.L04F06 != AppointmentStatus.APPROVED)
+            {
+                throw new AppException("Only approved appointments can be marked as completed.", StatusCodes.Status400BadRequest);
+            }
+
+            _completeAppointmentState.Appointment = appointment;
+        }
+
+        /// <inheritdoc/>
+        public async Task CompleteAppointmentSaveAsync()
+        {
+            if (_completeAppointmentState?.Appointment == null)
+            {
+                throw new AppException("Invalid appointment workflow state.", StatusCodes.Status400BadRequest);
+            }
+
+            _reflectionMapper.MapToExisting<CancelAppointmentRequest, TBL04>(
+                _completeAppointmentState.Request,
+                _completeAppointmentState.Appointment);
+            _completeAppointmentState.Appointment.L04F06 = AppointmentStatus.COMPLETED;
+            _completeAppointmentState.Appointment.L04F09 = DateTime.UtcNow;
+
+            await _appointmentRepository.UpdateAppointmentAsync(_completeAppointmentState.Appointment);
+
+            _completeAppointmentState = null;
         }
 
         #endregion

@@ -158,6 +158,20 @@ namespace backend.Controllers
             return Ok(response);
         }
 
+        /// <summary>
+        /// Retrieves completed appointments.
+        /// </summary>
+        /// <returns>A list of completed appointments.</returns>
+        [HttpGet("completed")]
+        public async Task<IActionResult> GetCompletedAppointments()
+        {
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            List<AppointmentResponse> response = await _appointmentService.GetAppointmentsByStatusAsync(currentUser.UserId, currentUser.Role, AppointmentStatus.COMPLETED);
+
+            return Ok(response);
+        }
+
         #endregion
 
         #region Doctor Endpoints
@@ -270,6 +284,29 @@ namespace backend.Controllers
             await _appointmentService.CancelFutureAppointmentSaveAsync();
 
             return Ok(new { message = "Appointment cancelled successfully." });
+        }
+
+        /// <summary>
+        /// Marks an approved appointment as completed by doctor.
+        /// </summary>
+        /// <param name="appointmentId">The appointment identifier.</param>
+        /// <param name="request">The completion request payload.</param>
+        /// <returns>A status response for completion action.</returns>
+        [HttpPut("{appointmentId:int}/complete")]
+        public async Task<IActionResult> CompleteAppointment(int appointmentId, [FromBody] CancelAppointmentRequest request)
+        {
+            CurrentUserContext currentUser = HttpContext.GetCurrentUserContext();
+
+            if (currentUser.Role != UserType.DOCTOR)
+            {
+                throw new AppException("You are not authorized to access this resource.", StatusCodes.Status403Forbidden);
+            }
+
+            await _appointmentService.CompleteAppointmentPresaveAsync(currentUser.UserId, appointmentId, request);
+            await _appointmentService.CompleteAppointmentValidateAsync();
+            await _appointmentService.CompleteAppointmentSaveAsync();
+
+            return Ok(new { message = "Appointment marked as completed successfully." });
         }
 
         #endregion

@@ -10,10 +10,11 @@ import toast from "react-hot-toast";
 const AppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all"); // all, pending, approved, cancelled, declined
+  const [filter, setFilter] = useState("all"); // all, pending, approved, cancelled, declined, completed
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [isDecisionModalOpen, setIsDecisionModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
 
   // Fetch appointments on mount
   useEffect(() => {
@@ -24,13 +25,19 @@ const AppointmentsPage = () => {
     setLoading(true);
     try {
       // Fetch all appointment statuses in parallel
-      const [pendingData, approvedData, declinedData, cancelledData] =
-        await Promise.all([
-          appointmentAPI.getPendingAppointments(),
-          appointmentAPI.getApprovedAppointments(),
-          appointmentAPI.getDeclinedAppointments(),
-          appointmentAPI.getCancelledAppointments(),
-        ]);
+      const [
+        pendingData,
+        approvedData,
+        declinedData,
+        cancelledData,
+        completedData,
+      ] = await Promise.all([
+        appointmentAPI.getPendingAppointments(),
+        appointmentAPI.getApprovedAppointments(),
+        appointmentAPI.getDeclinedAppointments(),
+        appointmentAPI.getCancelledAppointments(),
+        appointmentAPI.getCompletedAppointments(),
+      ]);
 
       // Combine all appointments
       const allAppointments = [
@@ -38,6 +45,7 @@ const AppointmentsPage = () => {
         ...approvedData,
         ...declinedData,
         ...cancelledData,
+        ...completedData,
       ];
 
       // Transform backend response to match expected format
@@ -88,6 +96,7 @@ const AppointmentsPage = () => {
       approved: "confirmed",
       cancelled: "cancelled",
       declined: "cancelled",
+      completed: "default",
     };
     return statusMap[status] || "default";
   };
@@ -110,6 +119,15 @@ const AppointmentsPage = () => {
     setIsCancelModalOpen(true);
   };
 
+  const handleCompleteClick = (appointment) => {
+    if (appointment.status !== "approved") {
+      toast.error("You can only complete approved appointments");
+      return;
+    }
+    setSelectedAppointment(appointment);
+    setIsCompleteModalOpen(true);
+  };
+
   const handleDecisionSuccess = async () => {
     setIsDecisionModalOpen(false);
     setSelectedAppointment(null);
@@ -124,6 +142,13 @@ const AppointmentsPage = () => {
     toast.success("Appointment cancelled successfully!");
   };
 
+  const handleCompleteSuccess = async () => {
+    setIsCompleteModalOpen(false);
+    setSelectedAppointment(null);
+    await fetchAppointments();
+    toast.success("Appointment marked as completed successfully!");
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -136,7 +161,14 @@ const AppointmentsPage = () => {
     <div className="space-y-6">
       {/* Filter Tabs */}
       <div className="flex gap-2 pb-4 border-b border-gray-200 overflow-x-auto">
-        {["all", "pending", "approved", "cancelled", "declined"].map((tab) => (
+        {[
+          "all",
+          "pending",
+          "approved",
+          "completed",
+          "cancelled",
+          "declined",
+        ].map((tab) => (
           <button
             key={tab}
             onClick={() => setFilter(tab)}
@@ -173,7 +205,9 @@ const AppointmentsPage = () => {
                   ? "border-l-4 border-l-amber-500"
                   : apt.status === "approved"
                     ? "border-l-4 border-l-green-500"
-                    : "border-l-4 border-l-gray-400"
+                    : apt.status === "completed"
+                      ? "border-l-4 border-l-blue-500"
+                      : "border-l-4 border-l-gray-400"
               }`}
             >
               <Card.Content className="flex items-center justify-between gap-4">
@@ -205,13 +239,22 @@ const AppointmentsPage = () => {
                     </Button>
                   )}
                   {apt.status === "approved" && (
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => handleCancelClick(apt)}
-                    >
-                      Cancel
-                    </Button>
+                    <>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleCompleteClick(apt)}
+                      >
+                        Complete
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleCancelClick(apt)}
+                      >
+                        Cancel
+                      </Button>
+                    </>
                   )}
                 </div>
               </Card.Content>
@@ -240,6 +283,18 @@ const AppointmentsPage = () => {
         }}
         appointment={selectedAppointment}
         onCancelSuccess={handleCancelSuccess}
+      />
+
+      {/* Complete Modal */}
+      <AppointmentCancelModal
+        isOpen={isCompleteModalOpen}
+        onClose={() => {
+          setIsCompleteModalOpen(false);
+          setSelectedAppointment(null);
+        }}
+        appointment={selectedAppointment}
+        onCancelSuccess={handleCompleteSuccess}
+        isCompleteMode={true}
       />
     </div>
   );

@@ -9,6 +9,7 @@ const Button = ({
   const variants = {
     primary:
       "bg-blue-600 text-white hover:bg-blue-700 border-blue-600 shadow-md hover:shadow-lg",
+    secondary: "bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-300",
     outline:
       "bg-white text-gray-700 hover:bg-gray-50 border-gray-300 hover:border-gray-400",
     ghost: "bg-transparent text-gray-700 hover:bg-gray-100 border-transparent",

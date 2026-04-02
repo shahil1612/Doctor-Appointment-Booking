@@ -131,6 +131,24 @@ namespace backend.Services
         /// <param name="slotId">The slot identifier.</param>
         Task DeleteSlotAsync(int doctorUserId, int slotId);
 
+        /// <summary>
+        /// Prepares complete appointment workflow state.
+        /// </summary>
+        /// <param name="doctorUserId">The doctor user identifier.</param>
+        /// <param name="appointmentId">The appointment identifier.</param>
+        /// <param name="request">The completion request payload.</param>
+        Task CompleteAppointmentPresaveAsync(int doctorUserId, int appointmentId, CancelAppointmentRequest request);
+
+        /// <summary>
+        /// Validates complete appointment workflow state and business rules.
+        /// </summary>
+        Task CompleteAppointmentValidateAsync();
+
+        /// <summary>
+        /// Persists complete appointment workflow state.
+        /// </summary>
+        Task CompleteAppointmentSaveAsync();
+
         #endregion
     }
 }

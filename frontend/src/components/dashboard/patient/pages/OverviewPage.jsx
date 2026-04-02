@@ -35,8 +35,6 @@ const OverviewPage = ({ onBookAppointment }) => {
           ...(cancelledData || []),
         ];
 
-        console.log("✅ All Appointments Response:", allAppointments);
-
         const now = new Date();
 
         // Transform all appointments
@@ -128,7 +126,7 @@ const OverviewPage = ({ onBookAppointment }) => {
     {
       icon: "✅",
       value: completedAppointments.length.toString(),
-      label: "Completed",
+      label: "Approved appointments",
       color: "green",
     },
     {
@@ -186,7 +184,7 @@ const OverviewPage = ({ onBookAppointment }) => {
       <Card>
         <Card.Header>
           <Card.Title subtitle="Your appointment history">
-            Completed Appointments
+            Appointments
           </Card.Title>
         </Card.Header>
         <Card.Content className="space-y-3">

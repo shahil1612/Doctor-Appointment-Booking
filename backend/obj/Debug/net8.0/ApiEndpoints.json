@@ -38,6 +38,27 @@
   },
   {
     "ContainingType": "backend.Controllers.AppointmentsController",
+    "Method": "CompleteAppointment",
+    "RelativePath": "api/Appointments/{appointmentId}/complete",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "appointmentId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "backend.DTOs.CancelAppointmentRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.AppointmentsController",
     "Method": "DecideAppointment",
     "RelativePath": "api/Appointments/{appointmentId}/decision",
     "HttpMethod": "PUT",
@@ -71,6 +92,16 @@
     "ContainingType": "backend.Controllers.AppointmentsController",
     "Method": "GetCancelledAppointments",
     "RelativePath": "api/Appointments/cancelled",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.AppointmentsController",
+    "Method": "GetCompletedAppointments",
+    "RelativePath": "api/Appointments/completed",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -273,6 +304,90 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.MedicalDocumentsController",
+    "Method": "UploadDocument",
+    "RelativePath": "api/MedicalDocuments",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "DocumentTitle",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Description",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "File",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.MedicalDocumentsController",
+    "Method": "DeleteDocument",
+    "RelativePath": "api/MedicalDocuments/{documentId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "documentId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.MedicalDocumentsController",
+    "Method": "DownloadDocument",
+    "RelativePath": "api/MedicalDocuments/{documentId}/download",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "documentId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.MedicalDocumentsController",
+    "Method": "GetPatientDocuments",
+    "RelativePath": "api/MedicalDocuments/patient/{patientUserId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "patientUserId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.MedicalDocumentsController",
+    "Method": "GetMyDocuments",
+    "RelativePath": "api/MedicalDocuments/patient/my-documents",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

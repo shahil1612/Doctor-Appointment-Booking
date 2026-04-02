@@ -153,6 +153,12 @@ export const appointmentAPI = {
     });
   },
 
+  getCompletedAppointments: async () => {
+    return apiFetch("/appointments/completed", {
+      method: "GET",
+    });
+  },
+
   decideAppointment: async (appointmentId, data) => {
     return apiFetch(`/appointments/${appointmentId}/decision`, {
       method: "PUT",
@@ -162,6 +168,13 @@ export const appointmentAPI = {
 
   cancelAppointment: async (appointmentId, data) => {
     return apiFetch(`/appointments/${appointmentId}/cancel`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  completeAppointment: async (appointmentId, data) => {
+    return apiFetch(`/appointments/${appointmentId}/complete`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
@@ -219,6 +232,71 @@ export const appointmentAPI = {
 
   deletePrescription: async (prescriptionId) => {
     return apiFetch(`/prescriptions/${prescriptionId}`, {
+      method: "DELETE",
+    });
+  },
+};
+
+/**
+ * Medical Documents API calls
+ */
+export const medicalDocumentAPI = {
+  // Patient endpoints
+  uploadDocument: async (formData) => {
+    const token = store.getState().auth.token;
+    const response = await fetch(`${API_BASE_URL}/medicaldocuments`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response
+        .json()
+        .catch(() => ({ message: "Upload failed" }));
+      throw new Error(
+        error.Message || error.message || `HTTP ${response.status}`,
+      );
+    }
+
+    return response.json();
+  },
+
+  getMyDocuments: async () => {
+    return apiFetch("/medicaldocuments/patient/my-documents", {
+      method: "GET",
+    });
+  },
+
+  getPatientDocuments: async (patientUserId) => {
+    return apiFetch(`/medicaldocuments/patient/${patientUserId}`, {
+      method: "GET",
+    });
+  },
+
+  downloadDocument: async (documentId) => {
+    const token = store.getState().auth.token;
+    const response = await fetch(
+      `${API_BASE_URL}/medicaldocuments/${documentId}/download`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error("Download failed");
+    }
+
+    return response;
+  },
+
+  deleteDocument: async (documentId) => {
+    return apiFetch(`/medicaldocuments/${documentId}`, {
       method: "DELETE",
     });
   },

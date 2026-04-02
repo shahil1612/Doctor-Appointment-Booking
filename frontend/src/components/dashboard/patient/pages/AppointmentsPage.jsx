@@ -23,13 +23,19 @@ const AppointmentsPage = ({ onBookNew }) => {
       setLoading(true);
       try {
         // Fetch all appointment states using Promise.all
-        const [pendingData, approvedData, declinedData, cancelledData] =
-          await Promise.all([
-            appointmentAPI.getPendingAppointments(),
-            appointmentAPI.getApprovedAppointments(),
-            appointmentAPI.getDeclinedAppointments(),
-            appointmentAPI.getCancelledAppointments(),
-          ]);
+        const [
+          pendingData,
+          approvedData,
+          declinedData,
+          cancelledData,
+          completedData,
+        ] = await Promise.all([
+          appointmentAPI.getPendingAppointments(),
+          appointmentAPI.getApprovedAppointments(),
+          appointmentAPI.getDeclinedAppointments(),
+          appointmentAPI.getCancelledAppointments(),
+          appointmentAPI.getCompletedAppointments(),
+        ]);
 
         // Combine all appointments
         const allAppointments = [
@@ -37,6 +43,7 @@ const AppointmentsPage = ({ onBookNew }) => {
           ...(approvedData || []),
           ...(declinedData || []),
           ...(cancelledData || []),
+          ...(completedData || []),
         ];
 
         // Transform backend response to match expected format
@@ -96,15 +103,12 @@ const AppointmentsPage = ({ onBookNew }) => {
     );
   });
 
-  // Completed: past date AND (pending or confirmed status - meaning it was actually completed)
+  // Completed: appointments with completed status OR past confirmed appointments
   const completedAppts = appointments.filter((apt) => {
-    const aptDate = new Date(apt.appointmentAtUtc);
-    return (
-      aptDate <= now && (apt.status === "pending" || apt.status === "confirmed")
-    );
+    return apt.status === "completed";
   });
 
-  // Cancelled/Declined: any appointment with cancelled or declined status
+  // Cancelled/Declined: any appointment with cancelled status
   const cancelledAppts = appointments.filter((apt) => {
     return apt.status === "cancelled";
   });

@@ -63,6 +63,11 @@ namespace backend.Data
         /// </summary>
         public DbSet<TBL08> Prescriptions { get; set; }
 
+        /// <summary>
+        /// Gets or sets the medical documents table mapping.
+        /// </summary>
+        public DbSet<TBL09> MedicalDocuments { get; set; }
+
         #endregion
 
         #region Protected Methods
@@ -167,6 +172,18 @@ namespace backend.Data
                 entity.HasOne(slot => slot.L07F09)
                     .WithMany()
                     .HasForeignKey(slot => slot.L07F03)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<TBL09>(entity =>
+            {
+                entity.ToTable("medical_documents");
+                entity.Property(e => e.L09F09).HasColumnType("datetime");
+                entity.HasIndex(e => e.L09F02);
+
+                entity.HasOne<TBL01>()
+                    .WithMany()
+                    .HasForeignKey(e => e.L09F02)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }

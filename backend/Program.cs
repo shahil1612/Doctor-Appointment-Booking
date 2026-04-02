@@ -167,6 +167,8 @@ builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
 builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
+builder.Services.AddScoped<IMedicalDocumentRepository, MedicalDocumentRepository>();
+builder.Services.AddScoped<IMedicalDocumentService, MedicalDocumentService>();
 
 #endregion
 

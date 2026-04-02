@@ -23,6 +23,11 @@ namespace backend.Models
         /// <summary>
         /// Represents an appointment cancelled by doctor.
         /// </summary>
-        CANCELLED
+        CANCELLED,
+
+        /// <summary>
+        /// Represents an appointment that has been completed.
+        /// </summary>
+        COMPLETED
     }
 }
